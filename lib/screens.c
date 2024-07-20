@@ -6,11 +6,11 @@
 
 struct termios orig_termios;
 
-void screens_canonical() {
+void screens_canonical(void) {
   tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios);
 }
 
-void screens_raw() {
+void screens_raw(void) {
   tcgetattr(STDIN_FILENO, &orig_termios);
   atexit(screens_canonical);
 
