@@ -212,7 +212,7 @@ vector strings_trim(const string *s, const string *sep) {
 	}
 
     size_t prev = 0, size = 0;
-    for (size_t i = 0; i < indexes.size; i++) {
+    for (size_t i = 0; i < indexes.size + 1; i++) {
 		size_t index = ((size_t *)indexes.data)[i];
 
         if (i > indexes.size - 1) {
@@ -273,22 +273,21 @@ void strings_trim_virtual(const string *s, const string *sep, vector *sentences)
 
 	string_virtual new_string_virtual;
     size_t prev = 0, size = 0;
-    for (size_t i = 0; i < indexes.size; i++) {
+    for (size_t i = 0; i < indexes.size + 1; i++) {
 		size_t index = ((size_t *)indexes.data)[i];
 
-        if (i > indexes.size - 1) {
+        if (i >= indexes.size) {
             size = s->size - prev + 1;
         } else {
             size = index - prev + 1;
         }
 
-        if (size <= 1) {
-            prev = index + (sep->size - 1);
-            continue;
-        }
-
         if (s->text[prev] == '\0') {
             break;
+        }
+
+        if (size <= 1) {
+            prev = index + (sep->size - 1);
         }
 
 		if (sentences->size <= i) {
@@ -300,10 +299,6 @@ void strings_trim_virtual(const string *s, const string *sep, vector *sentences)
 			old_string_virtual->size = size;
 			old_string_virtual->text = s->text + prev;
 		}
-
-        //if (i > indexes.size - 1) {
-        //    break;
-        //}
 
         prev = index + (sep->size - 1);
     }
@@ -366,12 +361,20 @@ size_t strings_hasherize(const string *s) {
 void strings_print(const string *s) {
     errors_panic("strings_print (s)", s == NULL);
     errors_panic("strings_print (s.size <= 1)", s->size <= 1);
-    errors_warn("strings_print (s.size < 2)", s->size < 2);
 
     for (size_t i = 0; i < s->size - 1; i++) {
         printf("%c", s->text[i]);
     }
+}
 
+void strings_print_no_panic(const string *s) {
+	if (s != NULL && s->size > 2) {
+		strings_print(s);
+	}
+}
+
+void strings_println(const string *s) {
+	strings_print(s);
     printf("\n");
 }
 

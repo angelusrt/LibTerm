@@ -73,5 +73,9 @@ size_t strings_hasherize(const string *s);
 
 void strings_print(const string *s);
 
+void strings_print_no_panic(const string *s);
+
+void strings_println(const string *s);
+
 
 #endif

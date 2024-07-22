@@ -29,6 +29,7 @@ bool files_read(int f, string *buffer) {
 		return 1;
 	} else if ((size_t)bytes_read < buffer->capacity){
 		buffer->text[bytes_read + 1] = '\0';
+		return 1;
 	}
 
 	return 0;
