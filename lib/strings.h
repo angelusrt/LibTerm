@@ -38,6 +38,9 @@ __attribute_warn_unused_result__
 string strings_init(strings_size size);
 
 __attribute_warn_unused_result__
+string strings_lit(char *const lit);
+
+__attribute_warn_unused_result__
 string strings_make(const char *lit);
 
 //returns if it failed to resize
@@ -63,8 +66,9 @@ vector strings_trim(const string *s, const string *sep);
 __attribute_warn_unused_result__
 set strings_trim_unique(const string *s);
 
-///__attribute_warn_unused_result__
-//vector strings_trim_virtual(string *s, string *sep);
+__attribute_warn_unused_result__
+__attribute__ ((__format__ (printf, 1, 2)))
+string strings_make_format(const char *const form, ...);
 
 void strings_trim_virtual(const string *s, const string *sep, vector *sentences);
 

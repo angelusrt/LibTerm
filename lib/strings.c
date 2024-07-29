@@ -14,6 +14,13 @@ string strings_init(const strings_size size) {
     return (string) {.size=1, .capacity=size, .text=text};
 }
 
+string strings_lit(char *const lit) {
+	errors_panic("strings_lit (lit)", lit == NULL);
+	errors_panic("strings_lit (lit[0] == '\\0')", lit[0] == '\0');
+
+	return (string){ .text=lit, .size=strlen(lit)+1 };
+}
+
 string strings_make(const char *lit) {
     errors_panic("strings_make (lit)", lit == NULL);
     errors_warn("strings_make lit == '\\0'", strncmp(lit, "\0", 1) == 0);
@@ -267,8 +274,14 @@ void strings_trim_virtual(const string *s, const string *sep, vector *sentences)
 	vector indexes = strings_find(s, sep);
 	if (indexes.size == 0) {
 		printf(colors_warn("strings_trim_virtual (indexes.size == 0)"));
+		sentences->size = 0;
 		vectors_free(&indexes);
 		return;
+	}
+
+	for (size_t i = 0; i < sentences->size; i++) {
+		string_virtual *sv = (string_virtual *)sentences->data+i;
+		sv->size = 0;
 	}
 
 	string_virtual new_string_virtual;
@@ -282,9 +295,7 @@ void strings_trim_virtual(const string *s, const string *sep, vector *sentences)
             size = index - prev + 1;
         }
 
-        if (s->text[prev] == '\0') {
-            break;
-        }
+		// if (s->text[prev] == '\0') { break; }
 
         if (size <= 1) {
             prev = index + (sep->size - 1);
@@ -343,6 +354,31 @@ set strings_trim_unique(const string *s) {
 	}
 
 	return (set){.hashs=hashs, .itens=tokens, .freqs=freqs};
+}
+
+string strings_make_format(const char *const form, ...) {
+    errors_panic("strings_make_format (form)", form == NULL);
+    errors_panic("strings_make_format (form < 1)", strlen(form) < 1);
+
+    va_list args, args2;
+    va_start(args, form);
+    *args2 = *args;
+
+    size_t buff_size = vsnprintf(NULL, 0, form, args) + 1;
+
+	size_t new_capacity = strings_min;
+	while (new_capacity < buff_size) {
+		new_capacity = new_capacity << 1;
+	}
+
+    char *text = calloc(new_capacity, sizeof(char));
+    errors_panic("strings_make_format (text)", text == NULL);
+
+    vsnprintf(text, buff_size, form, args2);
+
+    va_end(args);
+
+    return (string){.text=text, .size=buff_size, .capacity=new_capacity};
 }
 
 size_t strings_hasherize(const string *s) {
