@@ -9,3 +9,21 @@ Em "state/" é necessário prover um arquivo chamado "dictionary.csv" conténdo 
 Naturalmente, como ";" é usado como separador o seu uso em outra posição gramátical confundirá o programa gerando resultados não esperados.
 
 Compilação recomendada: gcc -Wall -Wextra -Wpedantic main.c -o main -lm
+
+arquitetura:
+``` mermaid
+flowchart TB
+    subgraph app
+        subgraph state
+            page
+        end
+        subgraph controller
+            ...
+        end
+        subgraph listener
+            option --> action
+        end
+    end
+
+    action --> page --> ... --> option
+```
