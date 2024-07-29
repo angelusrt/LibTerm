@@ -11,6 +11,9 @@
 #include "strings.h"
 #include "vectors.h"
 
+__attribute_warn_unused_result__
+int files_make(char *filename, int mode);
+
 //It returns 1 or 0; "1" meaning it ended or error'd; "0" meaning it is able to continue.
 __attribute_warn_unused_result__
 bool files_read(int f, string *buffer);

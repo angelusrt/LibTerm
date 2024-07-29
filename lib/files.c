@@ -7,6 +7,15 @@
 #include "strings.c"
 #include "vectors.c"
 
+int files_make(char *filename, int mode) {
+	errors_panic("files_make (filename)", filename == NULL);
+
+	int file = open(filename, mode);
+	errors_panic("files_make (file == -1)", file == -1);
+
+	return file;
+}
+
 bool files_read(int f, string *buffer) {
 	errors_panic("files_read (buffer)", buffer == NULL);
 	errors_panic("files_read (buffer.capacity < strings_min)", buffer->capacity < strings_min);
