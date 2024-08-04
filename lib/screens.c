@@ -19,4 +19,10 @@ void screens_raw(void) {
   tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
 }
 
+void screens_clear(void) {
+	#if screens_clear_mode
+		system("clear");
+	#endif
+}
+
 #endif
