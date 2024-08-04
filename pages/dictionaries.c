@@ -36,29 +36,37 @@ void dictionaries_print(
 
 	screens_clear();
 	printf("\033[31mLinTerm | Dicionário \033[0m| Item: %ld/%ld ", current + 1, total);
+
 	switch (dict_stat) {
-		case dictionaries_note_not_added_status: 
-			printf("| \033[31mNota não adicionada\033[0m");
-			break;
-		case dictionaries_note_added_status: 
-			printf("| \033[32mNota adicionada\033[0m");
-			break;
-		case dictionaries_note_exists_status: 
-			printf("| \033[33mNota já existe\033[0m");
-			break;
-		case dictionaries_note_inserted_status: 
-			printf("| \033[32mNota inserida\033[0m");
-			break;
-		case dictionaries_note_not_inserted_status: 
-			printf("| \033[31mNota não inserida\033[0m");
-			break;
+	case dictionaries_note_not_added_status: 
+		printf("| \033[31mNota não adicionada\033[0m");
+	break;
+	case dictionaries_note_added_status: 
+		printf("| \033[32mNota adicionada\033[0m");
+	break;
+	case dictionaries_note_exists_status: 
+		printf("| \033[33mNota já existe\033[0m");
+	break;
+	case dictionaries_note_inserted_status: 
+		printf("| \033[32mNota inserida\033[0m");
+	break;
+	case dictionaries_note_not_inserted_status: 
+		printf("| \033[31mNota não inserida\033[0m");
+	break;
+	case dictionaries_note_removed_status:
+		printf("| \033[32mNota removida\033[0m");
+	break;
+	case dictionaries_note_not_removed_status:
+		printf("| \033[31mNota não removida\033[0m");
+	break;
 	}
+
 	printf("\n\n");
 
 	_dictionaries_print_frequency(cols+1);
 	printf("\n");
 
-	printf("\033[1m");
+	printf(note->size > 1 ? "\033[32;1m" : "\033[1m");
 	if (columns.size > 1) { 
 		strings_print_no_panic((string *)(cols+0));
 	}

@@ -12,6 +12,8 @@
 typedef enum _notes_status {
 	notes_note_inserted_status = 1,
 	notes_note_not_inserted_status,
+	notes_note_removed_status,
+	notes_note_not_removed_status,
 } notes_status;
 
 void notes_print(const string *line, size_t current, size_t total, notes_status notes_stat);
@@ -26,5 +28,9 @@ bool notes_add(int file, const string *entry);
 // It returns 0 for inserting conditionally, 1 for successfully inserting, or -1 for errors
 __attribute_warn_unused_result__
 int notes_insert(int file, size_t index);
+
+//It returns 1 for successfully removing it else 0
+__attribute_warn_unused_result__
+bool notes_remove(int file, size_t index, size_t last, string_virtual *note);
 
 #endif

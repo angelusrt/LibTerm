@@ -23,7 +23,7 @@ int main() {
 	dictionaries_status dict_stats = 0;
 	size_t dict_cursor = 0;
 
-	vector note_lines = pages_make("./state/apprentice.csv", O_RDONLY);
+	vector note_lines = pages_make("./state/apprentice.csv", O_RDONLY | O_CREAT);
 	string *notes = (string *)note_lines.data;
 	notes_status notes_stats = 0;
 	size_t note_cursor = 0;
@@ -120,8 +120,10 @@ int main() {
 			} else {
 				dict_stats = dictionaries_note_not_added_status;
 			}
+
+			redraw = true;
 		} else if (option == 'i' && page == 1) {
-			int file = files_make("./state/apprentice.csv", O_RDWR);
+			int file = files_make("./state/apprentice.csv", O_RDWR | O_CREAT);
 			int insert_stats = notes_insert(file, *cursor);
 
 			if (insert_stats != -1) {
@@ -135,6 +137,69 @@ int main() {
 			}
 
 			close(file);
+
+			redraw = true;
+		} else if (option == 'r' && page == 0) {
+			string_virtual note = {.size=0};
+			long note_index = notes_find(&note_lines, &dicts[*cursor], &note);
+
+			if (note_index >= 0) {
+				string_virtual *n = (string_virtual *)&notes[note_index];
+				int file = files_make("./state/apprentice.csv", O_RDWR | O_CREAT);
+				bool remove_stat = notes_remove(file, note_index, note_lines.size - 1, n);
+
+				if (remove_stat) {
+					vectors_free(&note_lines);
+					note_lines = pages_make("./state/apprentice.csv", O_RDONLY);
+					notes = (string *)note_lines.data;
+
+					if (note_lines.size > 1 && note_cursor == note_lines.size - 1) {
+						note_cursor--;
+					}
+
+					if (note_cursor > note_lines.size - 1) {
+						note_cursor = note_lines.size - 1;
+					}
+
+					dict_stats = dictionaries_note_removed_status;
+				} else {
+					dict_stats = dictionaries_note_not_removed_status;
+				}
+
+				close(file);
+			} else {
+				dict_stats = dictionaries_note_not_added_status;
+			}
+
+			redraw = true;
+		} else if (option == 'r' && page == 1 && note_lines.size > 0) {
+			int file = files_make("./state/apprentice.csv", O_RDWR | O_CREAT);
+
+			string_virtual *note = (string_virtual *)&notes[*cursor];
+			bool remove_stat = notes_remove(file, *cursor, note_lines.size - 1, note);
+
+			if (remove_stat) {
+				vectors_free(&note_lines);
+				note_lines = pages_make("./state/apprentice.csv", O_RDONLY);
+				notes = (string *)note_lines.data;
+				lines = &note_lines;
+
+				if (note_lines.size > 1 && *cursor == note_lines.size - 1) {
+					(*cursor)--;
+				}
+
+				if (*cursor > note_lines.size - 1) {
+					*cursor = note_lines.size - 1;
+				}
+
+				notes_stats = notes_note_removed_status;
+			} else {
+				notes_stats = notes_note_not_removed_status;
+			}
+
+			close(file);
+
+			redraw = true;
 		} else {
 			redraw = false;
 		}

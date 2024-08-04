@@ -2,6 +2,7 @@
 #define pages_c
 
 #include "pages.h"
+#include <unistd.h>
 
 void menus_print() {
 	screens_clear();
@@ -24,7 +25,24 @@ vector pages_make(const char *const filename, int mode) {
 	errors_panic("pages_make (filename == '\\n')", filename[0] == '\n');
 
 	int file = files_make(filename, mode);
-	string batch = strings_init(strings_very_large);
+
+	//--get size
+	long seek_stat = lseek(file, 0, SEEK_END);
+	errors_panic("pages_make (seek_stat < 0)", seek_stat < 0);
+
+	size_t new_size = strings_min;
+	while (new_size < (size_t)seek_stat) {
+		size_t new_new_size = new_size << 1;
+		if (new_new_size < new_size) break;
+
+		new_size = new_new_size;
+	}
+
+	seek_stat = lseek(file, 0, SEEK_SET);
+	errors_panic("pages_make (seek_stat < 0)", seek_stat < 0);
+	//--
+
+	string batch = strings_init(new_size);
 	int read_stat = files_read(file, &batch);
 
 	errors_panic("pages_make (batch)", strings_check(&batch));

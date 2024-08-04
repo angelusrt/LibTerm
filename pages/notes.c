@@ -15,13 +15,20 @@ void notes_print(const string *line, size_t current, size_t total, notes_status 
 	errors_panic("notes_print (line)", strings_check_extra(line));
 
 	switch (notes_stat) {
-		case notes_note_inserted_status:
-			printf("| \033[32mNota inserida\033[0m");
-			break;
-		case notes_note_not_inserted_status:
-			printf("| \033[31mNota não inserida\033[0m");
-			break;
+	case notes_note_inserted_status:
+		printf("| \033[32mNota inserida\033[0m");
+	break;
+	case notes_note_not_inserted_status:
+		printf("| \033[31mNota não inserida\033[0m");
+	break;
+	case notes_note_removed_status:
+		printf("| \033[32mNota removida\033[0m");
+	break;
+	case notes_note_not_removed_status:
+		printf("| \033[32mNota não removida\033[0m");
+	break;
 	}
+
 	printf("\n\n");
 
 	vector columns = vectors_init(vectors_string_virtual_type);
@@ -113,7 +120,9 @@ int notes_insert(int file, size_t index) {
 	printf("\033[33mInserir Nota:\033[0m\n");
 	screens_canonical();
 
-	string buffer = strings_init(pages_note_len + 1);
+	string buffer; 
+	strings_init_buffer(buffer, pages_note_len + 1);
+
 	long read_stat = read(STDIN_FILENO, buffer.text, buffer.capacity);
 	if (read_stat == -1) goto error_0;
 
@@ -130,14 +139,66 @@ int notes_insert(int file, size_t index) {
 	if (write_stat == -1) goto error_0;
 
 	size_t buffer_size = strlen(buffer.text);
-	strings_free(&buffer);
 	screens_raw();
 	return buffer_size <= pages_note_len;
 
 	error_0:
-	strings_free(&buffer);
 	screens_raw();
 	return -1;
+}
+
+bool notes_remove(int file, size_t index, size_t last, string_virtual *note) {
+	errors_panic("notes_remove (note)", string_virtuals_check(note));
+
+	//--archiving
+	int archive = files_make("./state/archive.csv", O_RDWR | O_CREAT);
+	if (archive < 0) goto error_0;
+
+	int seek_stat = lseek(archive, 0, SEEK_END);
+	if (seek_stat < 0) goto error_0;
+
+	long write_stat = write(archive, note->text, note->size);
+	if (write_stat < 0) goto error_0;
+
+	close(archive);
+	//--
+
+	//--substitute it for last line
+	if (index < last) {
+		string last_buffer; 
+		strings_init_buffer(last_buffer, pages_line_len);
+
+		long seek_stat = lseek(file, (pages_line_len * last), SEEK_SET);
+		if (seek_stat < 0) goto error_1;
+
+		//TODO: make read_stat error handling thorough
+		long read_stat = read(file, last_buffer.text, last_buffer.capacity);
+		if (read_stat < 0) goto error_1;
+
+		seek_stat = lseek(file, (pages_line_len * index), SEEK_SET);
+		if (seek_stat < 0) goto error_1;
+
+		long write_stat = write(file, last_buffer.text, last_buffer.capacity);
+		if (write_stat < 0) goto error_1;
+	}
+	//--
+
+	//--delete last line
+	seek_stat = lseek(file, (pages_line_len * last), SEEK_SET);
+	if (seek_stat < 0) goto error_1;
+
+	int truncate_stat = ftruncate(file, seek_stat);
+	if (truncate_stat < 0) goto error_1;
+	//--
+
+	return 1;
+
+	error_1:
+	return 0;
+
+	error_0:
+	close(archive);
+	return 0;
 }
 
 #endif

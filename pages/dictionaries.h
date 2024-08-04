@@ -15,6 +15,8 @@ typedef enum dictionaries_status {
     dictionaries_note_exists_status,
     dictionaries_note_inserted_status,
     dictionaries_note_not_inserted_status,
+	dictionaries_note_removed_status,
+	dictionaries_note_not_removed_status,
 } dictionaries_status;
 
 //note can be of size 0
