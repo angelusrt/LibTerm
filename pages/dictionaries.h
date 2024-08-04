@@ -19,6 +19,8 @@ typedef enum dictionaries_status {
 	dictionaries_note_not_removed_status,
 } dictionaries_status;
 
+#define dictionaries_filename "./state/dictionary.csv"
+
 //note can be of size 0
 void dictionaries_print(
 	const string *line, size_t current, size_t total, const string_virtual *note, dictionaries_status dict_stat

@@ -17,6 +17,8 @@
 #define pages_line_len 302
 #define pages_note_offset pages_word_len + 1 + pages_date_len + 1 + pages_score_len + 1
 
+#define archives_filename "./state/archive.csv"
+
 const string colsep = {.text="=", .size=2};
 const string linesep = {.text="\n", .size=2};
 

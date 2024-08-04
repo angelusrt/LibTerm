@@ -151,7 +151,7 @@ bool notes_remove(int file, size_t index, size_t last, string_virtual *note) {
 	errors_panic("notes_remove (note)", string_virtuals_check(note));
 
 	//--archiving
-	int archive = files_make("./state/archive.csv", O_RDWR | O_CREAT);
+	int archive = files_make(archives_filename, O_RDWR | O_CREAT);
 	if (archive < 0) goto error_0;
 
 	int seek_stat = lseek(archive, 0, SEEK_END);
@@ -199,6 +199,13 @@ bool notes_remove(int file, size_t index, size_t last, string_virtual *note) {
 	error_0:
 	close(archive);
 	return 0;
+}
+
+void notes_update(vector *note_lines, string **notes) {
+	vectors_free(note_lines);
+
+	*note_lines = pages_make(notes_filename, O_RDONLY);
+	*notes = (string *)note_lines->data;
 }
 
 #endif
