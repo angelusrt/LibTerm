@@ -21,11 +21,11 @@ int files_read(int f, string *buffer) {
 	errors_panic("files_read (buffer)", strings_check(buffer));
 
 	buffer->text[0] = '\0';
-	int bytes_read = read(f, buffer->text, buffer->capacity);
+	int bytes_read = read(f, buffer->text, buffer->capacity - 1);
 	buffer->text[buffer->capacity - 1] = '\0';
 
 	//TODO?: bytes_read may be -1 
-	buffer->size = bytes_read;
+	buffer->size = bytes_read + 1;
 
 	if (bytes_read == 0) {
 		buffer->size = strlen(buffer->text) + 1;
@@ -38,7 +38,7 @@ int files_read(int f, string *buffer) {
 		buffer->text[0] = '\0';
 
 		return -1;
-	} else if ((size_t)bytes_read < buffer->capacity){
+	} else if ((size_t)bytes_read < buffer->capacity - 1){
 		buffer->text[bytes_read + 1] = '\0';
 		return 1;
 	}
