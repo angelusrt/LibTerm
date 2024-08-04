@@ -10,6 +10,7 @@
 #include <math.h>
 
 #include "errors.h"
+#include "errors.c"
 #include "vectors.h"
 
 #define hash_const 7
@@ -43,13 +44,22 @@ string strings_lit(char *const lit);
 __attribute_warn_unused_result__
 string strings_make(const char *lit);
 
-//returns if it failed to resize
+//returns true if it failed to resize
 __attribute_warn_unused_result__
 bool strings_upgrade(string *s);
 
 void strings_free(string *s);
 
 void strings_free_many(size_t n, string *s, ...);
+
+__attribute_warn_unused_result__
+bool strings_check(const string *s);
+
+__attribute_warn_unused_result__
+bool strings_check_extra(const string *s);
+
+__attribute_warn_unused_result__
+bool string_virtuals_check(const string_virtual *s);
 
 //returns vector<size_t>
 __attribute_warn_unused_result__
@@ -80,6 +90,5 @@ void strings_print(const string *s);
 void strings_print_no_panic(const string *s);
 
 void strings_println(const string *s);
-
 
 #endif

@@ -7,8 +7,9 @@
 #include "strings.c"
 #include "vectors.c"
 
-int files_make(char *filename, int mode) {
+int files_make(const char *filename, int mode) {
 	errors_panic("files_make (filename)", filename == NULL);
+	errors_panic("files_make (filename == '\\0')", filename[0] == '\0');
 
 	int file = open(filename, mode);
 	errors_panic("files_make (file == -1)", file == -1);
@@ -16,13 +17,14 @@ int files_make(char *filename, int mode) {
 	return file;
 }
 
-bool files_read(int f, string *buffer) {
-	errors_panic("files_read (buffer)", buffer == NULL);
-	errors_panic("files_read (buffer.capacity < strings_min)", buffer->capacity < strings_min);
+int files_read(int f, string *buffer) {
+	errors_panic("files_read (buffer)", strings_check(buffer));
 
 	buffer->text[0] = '\0';
 	int bytes_read = read(f, buffer->text, buffer->capacity);
 	buffer->text[buffer->capacity - 1] = '\0';
+
+	//TODO?: bytes_read may be -1 
 	buffer->size = bytes_read;
 
 	if (bytes_read == 0) {
@@ -35,12 +37,13 @@ bool files_read(int f, string *buffer) {
 		buffer->size = 1;
 		buffer->text[0] = '\0';
 
-		return 1;
+		return -1;
 	} else if ((size_t)bytes_read < buffer->capacity){
 		buffer->text[bytes_read + 1] = '\0';
 		return 1;
 	}
 
+	//TODO: just return bytes_read
 	return 0;
 }
 

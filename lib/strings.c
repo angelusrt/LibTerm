@@ -4,8 +4,6 @@
 
 #include "strings.h"
 #include "vectors.c"
-#include "errors.c"
-
 
 string strings_init(const strings_size size) {
 	char *text = calloc(size, sizeof(char));
@@ -84,7 +82,6 @@ void strings_free(string *s) {
 
     free(s->text);
     s->text = NULL;
-    //free(s);
     s = NULL;
 }
 
@@ -110,18 +107,44 @@ void strings_free_many(size_t n, string *s, ...) {
     va_end(args);
 }
 
+//checks if string was properly initialized
+bool strings_check(const string *s) {
+	if (errors_check("strings_check (s)", s == NULL)) return true;
+	if (errors_check("strings_check (s.text)", s->text == NULL)) return true;
+	if (errors_check("strings_check (s.size == 0)", s->size == 0)) return true;
+	//if (errors_check("strings_check (s.capacity < strings_min)", s->capacity < strings_min)) return true;
+	//TODO: uncomment previous statement
+
+	return false;
+}
+
+//checks if string was properly assigned
+bool strings_check_extra(const string *s) {
+	if (strings_check(s)) return true;
+	if (errors_check("strings_check_extra (s.text[0] == '\\0')", s->text[0] == '\0')) return true;
+	if (errors_check("strings_check_extra (s.size == 1)", s->size == 1)) return true;
+
+	return false;
+}
+
+bool string_virtuals_check(const string_virtual *s) {
+	if (errors_check("string_virtuals_check (s)", s == NULL)) return true;
+	if (errors_check("string_virtuals_check (s.text)", s->text == NULL)) return true;
+	if (errors_check("string_virtuals_check (s.size <= 1)", s->size <= 1)) return true;
+
+	return false;
+}
+
 vector strings_find(const string *s, const string *sep) {
-    errors_panic("strings_find (s)", s == NULL);
-    errors_panic("strings_find (sep)", sep == NULL);
-    errors_panic("strings_find (s.size <= 1)", s->size <= 1);
-    errors_panic("strings_find (sep.size <= 1)", sep->size <= 1);
+	errors_panic("strings_find (s)", strings_check_extra(s));
+	errors_panic("strings_find (sep)", strings_check_extra(sep));
 
 	vector indexes = vectors_init(sizeof(size_t));
 
     for (size_t i = 0, j = 0; i < s->size - 1; i++) {
         if (s->text[i] == sep->text[0]) {
             j = 1;
-        } else if (s->text[i] == sep->text[j]) {
+		} else if (s->text[i] == sep->text[j]) {
             j++;
 		} else {
             j = 0;
@@ -204,10 +227,8 @@ string strings_make_replace(const string *s, const string *sep, const string *re
 }
 
 vector strings_trim(const string *s, const string *sep) {
-    errors_panic("strings_trim (s)", s == NULL);
-    errors_panic("strings_trim (sep)", sep == NULL);
-    errors_panic("strings_trim (s.size <= 1)", s->size <= 1);
-    errors_panic("strings_trim (sep.size <= 1)", sep->size <= 1);
+	errors_panic("strings_trim (s)", strings_check_extra(s));
+	errors_panic("strings_trim (sep)", strings_check_extra(sep));
 
 	vector indexes = strings_find(s, sep);
     vector sentences = vectors_init(vectors_string_type);
@@ -234,7 +255,7 @@ vector strings_trim(const string *s, const string *sep) {
         }
 
         if (s->text[prev] == '\0') {
-            break;
+            continue;
         }
 
 		size_t capacity = strings_min;
@@ -245,7 +266,11 @@ vector strings_trim(const string *s, const string *sep) {
 		string new_string = strings_init(capacity);
         new_string.size = size;
 
-        strncpy(new_string.text, s->text + prev, size - 1);
+        //strncpy(new_string.text, s->text + prev, size - 1);
+		for (size_t i = 0; i < size; i++) {
+			new_string.text[i] = (s->text + prev)[i];
+		}
+
         new_string.text[size - 1] = '\0';
 
         vectors_push(&sentences, &new_string);
@@ -295,7 +320,7 @@ void strings_trim_virtual(const string *s, const string *sep, vector *sentences)
             size = index - prev + 1;
         }
 
-		// if (s->text[prev] == '\0') { break; }
+		//if (s->text[prev] == '\0') { continue; }
 
         if (size <= 1) {
             prev = index + (sep->size - 1);

@@ -4,7 +4,7 @@
 #include "errors.h"
 
 //returns true if assert was successfull otherwise false
-bool errors_assert(char *message, bool statement){
+bool errors_assert(const char *message, bool statement){
 	if (!statement) {
 		printf(colors_error("o pressuposto '%s' falhou!\n"), message);
 		return false;
@@ -14,19 +14,30 @@ bool errors_assert(char *message, bool statement){
 	return true;
 }
 
-void errors_panic(char *message, bool statement) {
+void errors_panic(const char *message, bool statement) {
 	if (statement) {
 		printf(colors_error("%s"), message);
 		exit(1);
 	}
 }
 
-bool errors_warn(char *message, bool statement) {
+bool errors_check(const char *message, bool statement) {
 	if (statement) {
-		printf(colors_warn("%s"), message);
-
+		printf(colors_error("%s"), message);
 		return true;
 	}
+
+	return false;
+}
+
+bool errors_warn(const char *message, bool statement) {
+	#if errors_debug_mode
+		if (statement) {
+			printf(colors_warn("%s"), message);
+
+			return true;
+		}
+	#endif
 
 	return false;
 }

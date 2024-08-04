@@ -48,6 +48,9 @@ void vectors_types_cleanup(vectors_type type, void *data, size_t index);
 __attribute_warn_unused_result__
 vector vectors_init(vectors_type type);
 
+__attribute_warn_unused_result__
+bool vectors_check(const vector *v);
+
 bool vectors_push(vector *v, void *item);
 
 bool vectors_pop(vector *v);
