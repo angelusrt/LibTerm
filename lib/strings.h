@@ -35,6 +35,10 @@ typedef enum _strings_size {
 	strings_max = SIZE_MAX,
 } strings_size;
 
+#define strings_init_buffer(buffer, length) \
+	char buf_##buffer[length] = ""; \
+	buffer = (string) {.text=buf_##buffer, .size=length, .capacity=length}
+
 __attribute_warn_unused_result__
 string strings_init(strings_size size);
 
