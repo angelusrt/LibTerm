@@ -11,8 +11,8 @@ O separador usado, é: "=".
 Compilação recomendada: gcc -Wall -Wextra -Wpedantic main.c -o main -lm.
 
 arquitetura:
-``` mermaid
-state 
+```mermaid
+stateDiagram
     [*] --> model
     model --> draw
     draw --> listen
@@ -22,7 +22,7 @@ state
 ```
 
 estado:
-``` mermaid
+```mermaid
 classDiagram 
     class state{
         +vector dict_lines 
@@ -54,15 +54,15 @@ flowchart TB
 
 controlador:
 ```mermaid
-flowchart TB
-    controller --> next 
-    controller --> previous
-    controller --> notes_toggle
-    controller --> menu_toggle
-    controller --> add_note
-    controller --> insert_note_in_dictionary
-    controller --> insert_note_in_notes
-    controller --> quit
-    controller --> listen
+flowchart TB;
+    controller --> next;
+    controller --> previous;
+    controller --> notes_toggle;
+    controller --> menu_toggle;
+    controller --> add_note;
+    controller --> insert_note_in_dictionary;
+    controller --> insert_note_in_notes;
+    controller --> quit;
+    controller --> listen;
 ``` 
 
