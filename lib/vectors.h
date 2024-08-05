@@ -36,15 +36,6 @@ typedef bool (*compfunc)(void *, void *);
 typedef size_t (*hashfunc)(void *);
 typedef void (*cleanfunc)(void *);
 
-
-__attribute_warn_unused_result__
-size_t vectors_types_size(vectors_type type);
-
-void vectors_types_insert(vectors_type type, void *data, void *item, size_t index);
-
-void vectors_types_cleanup(vectors_type type, void *data, size_t index);
-
-
 __attribute_warn_unused_result__
 vector vectors_init(vectors_type type);
 

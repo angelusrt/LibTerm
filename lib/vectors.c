@@ -20,6 +20,7 @@ size_t vectors_types_size(vectors_type type) {
     return sizeof(size_t);
 }
 
+/*
 void vectors_types_insert(vectors_type type, void *data, void *item, size_t index) {
     switch (type) {
     case vectors_string_type:
@@ -38,6 +39,42 @@ void vectors_types_insert(vectors_type type, void *data, void *item, size_t inde
 
     ((size_t *)data)[index] = (size_t)item;
     return;
+}
+*/
+
+void vectors_types_insert(vectors_type type, void *data, size_t data_index, void *item, size_t item_index) {
+    switch (type) {
+    case vectors_string_type:
+        ((string *)data)[data_index] = ((string *)item)[item_index];
+        return;
+    case vectors_vector_type:
+        ((vector *)data)[data_index] = ((vector *)item)[item_index];
+        return;
+    case vectors_size_type:
+		((size_t *)data)[data_index] = (size_t)item;
+        return;
+    case vectors_string_virtual_type:
+        ((string_virtual *)data)[data_index] = ((string_virtual *)item)[item_index];
+        return;
+    }
+
+    ((size_t *)data)[data_index] = (size_t)item;
+    return;
+}
+
+void *vectors_types_get(vectors_type type, void *item, size_t item_index) {
+    switch (type) {
+    case vectors_string_type:
+        return (((string *)item) + item_index);
+    case vectors_vector_type:
+        return (((vector *)item) + item_index);
+    case vectors_size_type:
+        return (void *)((size_t)item);
+    case vectors_string_virtual_type:
+        return (((string_virtual *)item) + item_index);
+    }
+
+	return (void *)((size_t)item);
 }
 
 void vectors_types_cleanup(vectors_type type, void *data, size_t index) {
@@ -92,7 +129,7 @@ bool vectors_push(vector *v, void *item) {
         v->data = new_data;
     }
 
-    vectors_types_insert(v->type, v->data, item, v->size - 1);
+    vectors_types_insert(v->type, v->data, v->size - 1, item, 0);
 
     return false;
 }
@@ -125,29 +162,28 @@ bool vectors_pop(vector *v) {
     return false;
 }
 
-// void vectors_sort(vector *v, compfunc compare) {
-//	errors_panic("vectors_sort (v veio nulo)", v == NULL);
-//
-//	if (v->size <= 1) {
-//		printf(color_warn("vectors_sort (v.size <= 1)"));
-//		return;
-//	}
-//
-//	for (size_t i = v->size; i > 0; i--) {
-//		for (size_t j = 1; j < i; j++) {
-//
-//			void *prev_data = v->data + j - 1;
-//			void *curr_data = v->data + j;
-//
-//			bool is_bigger = compare(prev_data, curr_data);
-//			if (is_bigger) {
-//				vectors_types_insert(v->type, v->data, v->data +
-//j, v->capacity - 1); 				vectors_types_insert(v->type, v->data, v->data + j - 1,
-//j); 				vectors_types_insert(v->type, v->data, v->data + v->capacity - 1, j - 1);
-//			}
-//		}
-//	}
-// }
+ void vectors_sort(vector *v, compfunc compare) {
+	errors_panic("vectors_sort (v)", vectors_check(v));
+
+	if (v->size <= 1) {
+		printf(colors_warn("vectors_sort (v.size <= 1)"));
+		return;
+	}
+
+	for (size_t i = v->size; i > 0; i--) {
+		for (size_t j = 1; j < i; j++) {
+			void **prev_data = vectors_types_get(v->type, v->data, j - 1); 				
+			void **curr_data = vectors_types_get(v->type, v->data, j); 				
+
+			bool is_bigger = compare(prev_data, curr_data);
+			if (is_bigger) {
+				vectors_types_insert(v->type, v->data, v->capacity - 1, v->data, j); 				
+				vectors_types_insert(v->type, v->data, j, v->data, j - 1);
+				vectors_types_insert(v->type, v->data, j - 1, v->data, v->capacity - 1);
+			}
+		}
+	}
+ }
 
 void vectors_free(vector *v) {
     if (v == NULL) {

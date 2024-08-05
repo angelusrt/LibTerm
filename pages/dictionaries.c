@@ -2,16 +2,15 @@
 #define dictionaries_c
 
 #include "dictionaries.h"
+
 void _dictionaries_print_frequency(string_virtual *frequency) {
 	errors_panic("_dictionaries_print_frequency (frequency)", string_virtuals_check(frequency));
 
-	#define max_freq 5
 	ushort freq = 0;
-
 	if (frequency->size > 1) {
 		freq = frequency->text[0] - '0';
 
-		if (freq > 5) freq = 0; 
+		if (freq > max_freq) freq = 0; 
 
 		for (size_t i = 0; i < freq; i++) {
 			printf("▣");
@@ -24,7 +23,9 @@ void _dictionaries_print_frequency(string_virtual *frequency) {
 }
 
 void dictionaries_print(
-	const string *line, size_t current, size_t total, const string_virtual *note, dictionaries_status dict_stat
+	const string *line, size_t current, size_t total, 
+	const string_virtual *note, dictionaries_status dict_stat, 
+	dictionaries_sorting dict_sort
 ) {
 	errors_panic("dictionaries_print (line)", strings_check_extra(line));
 	errors_panic("dictionaries_print (dict_stat)", dict_stat < 0);
@@ -36,6 +37,17 @@ void dictionaries_print(
 
 	screens_clear();
 	printf("\033[31mLinTerm | Dicionário \033[0m| Item: %ld/%ld ", current + 1, total);
+
+	switch (dict_sort) {
+		case dictionaries_not_sort:
+		break;
+		case dictionaries_word_sort:
+			printf("| ordem: alfabética ");
+		break;
+		case dictionaries_frequency_sort:
+			printf("| ordem: frequência ");
+		break;
+	}
 
 	switch (dict_stat) {
 	case dictionaries_note_not_added_status: 
@@ -95,6 +107,28 @@ void dictionaries_print(
 	}
 
 	vectors_free(&columns);
+}
+
+bool dictionaries_compare_frequency(string *first, string *second) {
+	char *first_next_sep = strchr(first->text, '=');
+	ushort first_freq = 0;
+
+	if (first_next_sep[1] > 0 && first_next_sep[1] - '0' <= max_freq) {
+		first_freq = first_next_sep[1] - '0';
+	}
+
+	char *second_next_sep = strchr(second->text, '=');
+	ushort second_freq = 0;
+
+	if (second_next_sep[1] > 0 && second_next_sep[1] - '0' <= max_freq) {
+		second_freq = second_next_sep[1] - '0';
+	}
+
+	if (first_freq > second_freq) {
+		return false;
+	} 
+
+	return true;
 }
 
 #endif

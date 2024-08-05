@@ -56,6 +56,10 @@ void strings_free(string *s);
 
 void strings_free_many(size_t n, string *s, ...);
 
+//returns true if first is bigger else false
+__attribute_warn_unused_result__
+bool strings_compare(const string *first, const string *second);
+
 __attribute_warn_unused_result__
 bool strings_check(const string *s);
 

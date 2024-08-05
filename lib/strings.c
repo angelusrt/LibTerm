@@ -107,6 +107,18 @@ void strings_free_many(size_t n, string *s, ...) {
     va_end(args);
 }
 
+bool strings_compare(const string *first, const string *second) {
+    errors_panic("strings_compare (first)", strings_check_extra(first));
+    errors_panic("strings_compare (sec)", strings_check_extra(second));
+
+    size_t size = first->size;
+    if (first->size > second->size) {
+        size = second->size;
+    }
+
+    return strncmp(first->text, second->text, size) > 0;
+}
+
 //checks if string was properly initialized
 bool strings_check(const string *s) {
 	if (errors_check("strings_check (s)", s == NULL)) return true;

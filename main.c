@@ -2,6 +2,8 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "lib/vectors.h"
+#include "lib/vectors.c"
 #include "lib/files.h"
 #include "lib/files.c"
 #include "lib/screens.h"
@@ -22,6 +24,7 @@ int main() {
 	string *dicts = (string *)dict_lines.data;
 	dictionaries_status dict_stats = 0;
 	size_t dict_cursor = 0;
+	dictionaries_sorting dict_sort = dictionaries_not_sort;
 
 	vector note_lines = pages_make(notes_filename, O_RDONLY | O_CREAT);
 	string *notes = (string *)note_lines.data;
@@ -44,7 +47,7 @@ int main() {
 		} else if (redraw && page == 0) {
 			string_virtual note = {.size=0};
 			notes_find(&note_lines, &dicts[*cursor], &note);
-			dictionaries_print(&dicts[*cursor], *cursor, lines->size, &note, dict_stats);
+			dictionaries_print(&dicts[*cursor], *cursor, lines->size, &note, dict_stats, dict_sort);
 			dict_stats = 0;
 		} else if (redraw && page == 1) {
 			notes_print(&notes[*cursor], *cursor, lines->size, notes_stats);
@@ -73,6 +76,16 @@ int main() {
 			page = 0;
 			lines = &dict_lines;
 			cursor = &dict_cursor;
+			redraw = true;
+		} else if (option == 's' && page == 0) {
+			if (dict_sort == dictionaries_word_sort) {
+				vectors_sort(&dict_lines, (compfunc)dictionaries_compare_frequency);
+				dict_sort = dictionaries_frequency_sort;
+			} else {
+				vectors_sort(&dict_lines, (compfunc)strings_compare);
+				dict_sort = dictionaries_word_sort;
+			}
+
 			redraw = true;
 		} else if (option == 'a' && page == 0) {
 			string_virtual note = {.size=0};
