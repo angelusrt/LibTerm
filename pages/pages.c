@@ -2,7 +2,6 @@
 #define pages_c
 
 #include "pages.h"
-#include <unistd.h>
 
 void menus_print() {
 	screens_clear();
@@ -14,8 +13,13 @@ void menus_print() {
 	printf("\033[36m");
 	printf("J -> Anterior\n");
 	printf("K -> Próximo\n");
-	printf("I -> Inserir\n");
+	printf("I -> Inserir Nota\n");
+	printf("A -> Adicionar Nota\n");
+	printf("R -> Arquivar Nota\n");
+	printf("D -> Adicionar Definição\n");
 	printf("H -> Alternar entre Menu\n");
+	printf("N -> Alternar entre Notas\n");
+	printf("S -> Ordenar (alfabeticamente ou por frequência)\n");
 	printf("Q -> Fechar\n");
 	printf("\033[0m\n");
 }
@@ -79,17 +83,12 @@ string pages_make_line(const string *word) {
 		temp.text[i] = word->text[i];
 	}
 
-	temp.text[pages_word_len] = colsep.text[0];
-	strncpy(temp.text + pages_word_len + 1, today, pages_date_len);
-
-	ushort score_offset = pages_word_len + pages_date_len + 1;
-	temp.text[score_offset] = colsep.text[0];
-
-	ushort note_offset = score_offset + pages_score_len + 1;
-	temp.text[note_offset] = colsep.text[0];
-
-	ushort line_offset = note_offset + pages_note_len + 1;
-	temp.text[line_offset] = linesep.text[0];
+	temp.text[pages_definition_offset(0)] = colsep.text[0];
+	temp.text[pages_date_offset(0)] = colsep.text[0];
+	strncpy(temp.text + pages_date_offset(0) + 1, today, pages_date_len);
+	temp.text[pages_score_offset(0)] = colsep.text[0];
+	temp.text[pages_note_offset(0)] = colsep.text[0];
+	temp.text[pages_line_offset(0)] = linesep.text[0];
 
 	return temp;
 }

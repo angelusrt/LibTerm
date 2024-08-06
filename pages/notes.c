@@ -27,6 +27,12 @@ void notes_print(const string *line, size_t current, size_t total, notes_status 
 	case notes_note_not_removed_status:
 		printf("| \033[32mNota não removida\033[0m");
 	break;
+	case notes_note_not_defined_status:
+		printf("| \033[31mDefinição não adicionada\033[0m");
+	break;
+	case notes_note_defined_status:
+		printf("| \033[32mDefinição adicionada\033[0m");
+	break;
 	}
 
 	printf("\n\n");
@@ -40,20 +46,27 @@ void notes_print(const string *line, size_t current, size_t total, notes_status 
 		strings_print_no_panic((string *)(cols+0));
 	}
 
-	if (columns.size > 1 && cols+1 != NULL && cols[1].size > 2 && strlen(cols[1].text) > 2) {
-		printf(", ");
-		strings_print_no_panic((string *)(cols+1));
-	} 
-
 	if (columns.size > 2 && cols+2 != NULL && cols[2].size > 2 && strlen(cols[2].text) > 2) {
 		printf(", ");
 		strings_print_no_panic((string *)(cols+2));
+	} 
+
+	if (columns.size > 3 && cols+3 != NULL && cols[3].size > 2 && strlen(cols[3].text) > 2) {
+		printf(", ");
+		strings_print_no_panic((string *)(cols+3));
 	}
 
 	printf("\033[0m\n\n");
+	printf("Definição: \n");
+	if (columns.size > 1) {
+		strings_print_no_panic((string *)(cols+1));
+		printf("\n");
+	}
+	printf("\n");
+
 	printf("Nota: \n");
-	if (columns.size > 3) {
-		strings_print_no_panic((string *)(cols+3));
+	if (columns.size > 4) {
+		strings_print_no_panic((string *)(cols+4));
 		printf("\n");
 	}
 
@@ -75,7 +88,7 @@ long notes_find(const vector *note_lines, const string *entry, string_virtual *n
 
 		if (cmp == 0) {
 			vectors_free(&indexes);
-			note->text = notes[i].text + pages_note_offset;
+			note->text = notes[i].text + pages_note_offset(0) + 1;
 			note->size = pages_note_len;
 
 			return i;
@@ -129,10 +142,7 @@ int notes_insert(int file, size_t index) {
 	char *new_line = strchr(buffer.text, '\n');
 	if (new_line) { *new_line = '\0'; }
 
-	#define offset(i) (pages_line_len * i) + pages_word_len + 1 + \
-						pages_date_len + 1 + pages_score_len + 1
-
-	long seek_stat = lseek(file, offset(index), SEEK_SET);
+	long seek_stat = lseek(file, pages_note_offset(index) + 1, SEEK_SET);
 	if (seek_stat == -1) goto error_0;
 
 	long write_stat = write(file, buffer.text, pages_note_len);
@@ -141,6 +151,34 @@ int notes_insert(int file, size_t index) {
 	size_t buffer_size = strlen(buffer.text);
 	screens_raw();
 	return buffer_size <= pages_note_len;
+
+	error_0:
+	screens_raw();
+	return -1;
+}
+
+int notes_define(int file, size_t index) {
+	printf("\033[33mInserir Definição:\033[0m\n");
+	screens_canonical();
+
+	string buffer; 
+	strings_init_buffer(buffer, pages_definition_len + 1);
+
+	long read_stat = read(STDIN_FILENO, buffer.text, buffer.capacity);
+	if (read_stat == -1) goto error_0;
+
+	char *new_line = strchr(buffer.text, '\n');
+	if (new_line) { *new_line = '\0'; }
+
+	long seek_stat = lseek(file, pages_definition_offset(index) + 1, SEEK_SET);
+	if (seek_stat == -1) goto error_0;
+
+	long write_stat = write(file, buffer.text, pages_definition_len);
+	if (write_stat == -1) goto error_0;
+
+	size_t buffer_size = strlen(buffer.text);
+	screens_raw();
+	return buffer_size <= pages_definition_len;
 
 	error_0:
 	screens_raw();

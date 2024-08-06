@@ -19,6 +19,8 @@ typedef enum dictionaries_status {
     dictionaries_note_not_inserted_status,
 	dictionaries_note_removed_status,
 	dictionaries_note_not_removed_status,
+    dictionaries_note_defined_status,
+    dictionaries_note_not_defined_status,
 } dictionaries_status;
 
 typedef enum dictionaries_sorting {

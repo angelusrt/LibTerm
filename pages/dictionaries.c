@@ -71,6 +71,12 @@ void dictionaries_print(
 	case dictionaries_note_not_removed_status:
 		printf("| \033[31mNota não removida\033[0m");
 	break;
+	case dictionaries_note_not_defined_status:
+		printf("| \033[31mDefinição não adicionada\033[0m");
+	break;
+	case dictionaries_note_defined_status:
+		printf("| \033[32mDefinição adicionada\033[0m");
+	break;
 	}
 
 	printf("\n\n");

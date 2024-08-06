@@ -14,6 +14,8 @@ typedef enum _notes_status {
 	notes_note_not_inserted_status,
 	notes_note_removed_status,
 	notes_note_not_removed_status,
+	notes_note_defined_status,
+	notes_note_not_defined_status,
 } notes_status;
 
 #define notes_filename "./state/apprentice.csv"
@@ -30,6 +32,10 @@ bool notes_add(int file, const string *entry);
 // It returns 0 for inserting conditionally, 1 for successfully inserting, or -1 for errors
 __attribute_warn_unused_result__
 int notes_insert(int file, size_t index);
+
+// It returns 0 for inserting conditionally, 1 for successfully inserting, or -1 for errors
+__attribute_warn_unused_result__
+int notes_define(int file, size_t index);
 
 //It returns 1 for successfully removing it else 0
 __attribute_warn_unused_result__

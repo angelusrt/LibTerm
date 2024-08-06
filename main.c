@@ -138,6 +138,38 @@ int main() {
 			close(file);
 
 			redraw = true;
+		} else if (option == 'd' && page == 0) {
+			string_virtual note = {.size=0};
+			long note_index = notes_find(&note_lines, &dicts[*cursor], &note);
+
+			dict_stats = dictionaries_note_not_added_status;
+			if (note_index >= 0) {
+				int file = files_make(notes_filename, O_RDWR);
+				int insert_stats = notes_define(file, note_index);
+				dict_stats = dictionaries_note_not_defined_status;
+
+				if (insert_stats != -1) {
+					notes_update(&note_lines, &notes);
+					dict_stats = dictionaries_note_defined_status;
+				} 
+
+				close(file);
+			} 
+
+			redraw = true;
+		} else if (option == 'd' && page == 1) {
+			int file = files_make(notes_filename, O_RDWR | O_CREAT);
+			int insert_stats = notes_define(file, *cursor);
+			notes_stats = notes_note_not_defined_status;
+
+			if (insert_stats != -1) {
+				notes_update(&note_lines, &notes);
+				notes_stats = notes_note_defined_status;
+			} 
+
+			close(file);
+
+			redraw = true;
 		} else if (option == 'r' && page == 0) {
 			string_virtual note = {.size=0};
 			long note_index = notes_find(&note_lines, &dicts[*cursor], &note);
