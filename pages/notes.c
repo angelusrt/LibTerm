@@ -35,7 +35,7 @@ void notes_print(const string *line, size_t current, size_t total, notes_status 
 	break;
 	}
 
-	printf("\n\n");
+	printf("\n\n\n");
 
 	vector columns = vectors_init(vectors_string_virtual_type);
 	strings_trim_virtual(line, &colsep, &columns);
@@ -46,29 +46,31 @@ void notes_print(const string *line, size_t current, size_t total, notes_status 
 		strings_print_no_panic((string *)(cols+0));
 	}
 
+	printf(" (definição: ");
+	if (columns.size > 1) {
+		strings_print_no_panic((string *)(cols+1));
+		printf(")");
+	}
+
 	if (columns.size > 2 && cols+2 != NULL && cols[2].size > 2 && strlen(cols[2].text) > 2) {
-		printf(", ");
+		printf(" [");
 		strings_print_no_panic((string *)(cols+2));
+		printf("] ");
 	} 
 
 	if (columns.size > 3 && cols+3 != NULL && cols[3].size > 2 && strlen(cols[3].text) > 2) {
-		printf(", ");
+		printf(" [");
 		strings_print_no_panic((string *)(cols+3));
+		printf("] ");
 	}
 
-	printf("\033[0m\n\n");
-	printf("Definição: \n");
-	if (columns.size > 1) {
-		strings_print_no_panic((string *)(cols+1));
-		printf("\n");
-	}
-	printf("\n");
-
-	printf("Nota: \n");
+	printf("\033[0m\n\n\n");
+	printf("Nota \n\n🮌 ");
 	if (columns.size > 4) {
 		strings_print_no_panic((string *)(cols+4));
 		printf("\n");
 	}
+	printf("\n\n");
 
 	vectors_free(&columns);
 }

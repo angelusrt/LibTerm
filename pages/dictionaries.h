@@ -36,7 +36,7 @@ typedef enum dictionaries_sorting {
 //note can be of size 0
 void dictionaries_print(
 	const string *line, size_t current, size_t total, 
-	const string_virtual *note, dictionaries_status dict_stat, 
+	const string *note, dictionaries_status dict_stat, 
 	dictionaries_sorting dict_sort
 );
 

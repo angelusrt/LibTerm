@@ -13,18 +13,57 @@ void _dictionaries_print_frequency(string_virtual *frequency) {
 		if (freq > max_freq) freq = 0; 
 
 		for (size_t i = 0; i < freq; i++) {
-			printf("▣");
+			printf("🬹🬹");
 		}
 	}
 
 	for (size_t i = freq; i < max_freq; i++) {
-		printf("□");
+		printf("🮏🮏");
 	}
+}
+
+void _dictionaries_print_note(const string *note) {
+	vector columns = vectors_init(vectors_string_virtual_type);
+	strings_trim_virtual(note, &colsep, &columns);
+	string_virtual *cols = (string_virtual *)columns.data;
+
+	printf("\033[2mNotas \n\n");
+	printf("🮌 ");
+	if (columns.size > 0) {
+		strings_print_no_panic((string *)(cols+0));
+	}
+
+	printf(" (definição: ");
+	if (columns.size > 1) {
+		strings_print_no_panic((string *)(cols+1));
+		printf( ") ");
+	}
+
+	if (columns.size > 2 && cols+2 != NULL && cols[2].size > 2 && strlen(cols[2].text) > 2) {
+		printf(" [");
+		strings_print_no_panic((string *)(cols+2));
+		printf("] ");
+	} 
+
+	if (columns.size > 3 && cols+3 != NULL && cols[3].size > 2 && strlen(cols[3].text) > 2) {
+		printf("[");
+		strings_print_no_panic((string *)(cols+3));
+		printf("] ");
+	}
+
+	printf("\n🮌 Nota: ");
+	if (columns.size > 4) {
+		strings_print_no_panic((string *)(cols+4));
+		printf("\n\n");
+	}
+	printf("\n\033[0m");
+
+	vectors_free(&columns);
 }
 
 void dictionaries_print(
 	const string *line, size_t current, size_t total, 
-	const string_virtual *note, dictionaries_status dict_stat, 
+	const string *note, dictionaries_status dict_stat, 
 	dictionaries_sorting dict_sort
 ) {
 	errors_panic("dictionaries_print (line)", strings_check_extra(line));
@@ -79,12 +118,9 @@ void dictionaries_print(
 	break;
 	}
 
-	printf("\n\n");
+	printf("\n\n\n");
 
-	_dictionaries_print_frequency(cols+1);
-	printf("\n");
-
-	printf(note->size > 1 ? "\033[32;1m" : "\033[1m");
+	printf("\033[1m");
 	if (columns.size > 1) { 
 		strings_print_no_panic((string *)(cols+0));
 	}
@@ -106,10 +142,12 @@ void dictionaries_print(
 		printf("\n\n");
 	}
 
-	printf("Exemplo: \n");
-	if (note->size > 1) {
-		strings_print_no_panic((string *)note);
-		printf("\n");
+	printf("Frequência: \n");
+	_dictionaries_print_frequency(cols+1);
+	printf("\n\n\n\n");
+
+	if (note != NULL) {
+		_dictionaries_print_note(note);
 	}
 
 	vectors_free(&columns);

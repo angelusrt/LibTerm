@@ -6,22 +6,23 @@
 void menus_print() {
 	screens_clear();
 
-	printf("\033[31mLinTerm | Menu\033[0m\n\n");
+	printf("\033[31mLinTerm | Menu\033[0m\n\n\n");
 	printf("LinTerm é um programa de terminal "
-		   "para aprendizado de idiomas.\n\n");
+		   "para aprendizado de idiomas.\n\n\n");
 
-	printf("\033[36m");
-	printf("J -> Anterior\n");
-	printf("K -> Próximo\n");
-	printf("I -> Inserir Nota\n");
-	printf("A -> Adicionar Nota\n");
-	printf("R -> Arquivar Nota\n");
-	printf("D -> Adicionar Definição\n");
-	printf("H -> Alternar entre Menu\n");
-	printf("N -> Alternar entre Notas\n");
-	printf("S -> Ordenar (alfabeticamente ou por frequência)\n");
-	printf("Q -> Fechar\n");
-	printf("\033[0m\n");
+	printf("\033[2m");
+	printf("Comandos\n\n");
+	printf("🮌 J  Anterior\n");
+	printf("🮌 K  Próximo\n");
+	printf("🮌 I  Inserir Nota\n");
+	printf("🮌 A  Adicionar Nota\n");
+	printf("🮌 R  Arquivar Nota\n");
+	printf("🮌 D  Adicionar Definição\n");
+	printf("🮌 H  Alternar entre Menu\n");
+	printf("🮌 N  Alternar entre Notas\n");
+	printf("🮌 S  Ordenar (alfabeticamente ou por frequência)\n");
+	printf("🮌 Q  Fechar\n");
+	printf("\033[0m\n\n");
 }
 
 vector pages_make(const char *const filename, int mode) {

@@ -46,8 +46,14 @@ int main() {
 			menus_print();
 		} else if (redraw && page == 0) {
 			string_virtual note = {.size=0};
-			notes_find(&note_lines, &dicts[*cursor], &note);
-			dictionaries_print(&dicts[*cursor], *cursor, lines->size, &note, dict_stats, dict_sort);
+			long index = notes_find(&note_lines, &dicts[*cursor], &note);
+
+			if (index >= 0) {
+				dictionaries_print(&dicts[*cursor], *cursor, lines->size, &notes[index], dict_stats, dict_sort);
+			} else {
+				dictionaries_print(&dicts[*cursor], *cursor, lines->size, NULL, dict_stats, dict_sort);
+			}
+
 			dict_stats = 0;
 		} else if (redraw && page == 1) {
 			notes_print(&notes[*cursor], *cursor, lines->size, notes_stats);
