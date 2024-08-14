@@ -20,7 +20,10 @@ void menus_print() {
 	printf("🮌 D  Adicionar Definição\n");
 	printf("🮌 H  Alternar entre Menu\n");
 	printf("🮌 N  Alternar entre Notas\n");
+	printf("🮌 F  filtrar páginas\n");
 	printf("🮌 S  Ordenar (alfabeticamente ou por frequência)\n");
+	printf("🮌 L  Ir para o final da lista\n");
+	printf("🮌 0  Ir para o começo da lista\n");
 	printf("🮌 Q  Fechar\n");
 	printf("\033[0m\n\n");
 }
@@ -92,6 +95,57 @@ string pages_make_line(const string *word) {
 	temp.text[pages_line_offset(0)] = linesep.text[0];
 
 	return temp;
+}
+
+void pages_search(string *buffer) {
+	buffer->size = 0;
+
+	printf("\033[33mpesquise: \033[0m\n");
+
+	screens_canonical();
+	long read_stat = read(STDIN_FILENO, buffer->text, buffer->capacity);
+	screens_raw();
+
+	if (read_stat < 0) return;
+
+	buffer->size = strnlen(buffer->text, buffer->capacity - 1);
+
+	char *buffer_new_line = strchr(buffer->text, '\n');
+	if (buffer_new_line[0] == '\n') {
+		buffer_new_line[0] = '\0';
+	}
+}
+
+void pages_filter(const vector *page_lines, const string *word, vector *page_filtered) {
+	errors_panic("pages_filter (page_lines)", vectors_check(page_lines));
+	errors_panic("pages_filter (page_filtered)", vectors_check(page_filtered));
+	errors_panic("pages_filter (word)", strings_check_extra(word));
+
+	string *pages = (string *)page_lines->data;
+
+	for (size_t i = 0; i < page_lines->size; i++) {
+		string page = pages[i];
+		size_t size = word->size;
+
+		if (page.size < size) {
+			size = page.size;
+		}
+
+		if (page.size == 0) {
+			size = 1;
+		}
+
+		int comp = strncmp(page.text, word->text, size - 1);
+		if (comp == 0) {
+			string new_page = strings_init(page.capacity);
+			for (size_t i = 0; i < page.capacity; i++) {
+				new_page.text[i] = page.text[i];
+			}
+
+			new_page.size = page.size;
+			vectors_push(page_filtered, &new_page);
+		}
+	}
 }
 
 #endif

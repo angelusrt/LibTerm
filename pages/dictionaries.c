@@ -2,6 +2,7 @@
 #define dictionaries_c
 
 #include "dictionaries.h"
+#include <string.h>
 
 void _dictionaries_print_frequency(string_virtual *frequency) {
 	errors_panic("_dictionaries_print_frequency (frequency)", string_virtuals_check(frequency));
@@ -22,7 +23,7 @@ void _dictionaries_print_frequency(string_virtual *frequency) {
 	}
 }
 
-void _dictionaries_print_note(const string *note) {
+void dictionaries_print_note(const string *note) {
 	vector columns = vectors_init(vectors_string_virtual_type);
 	strings_trim_virtual(note, &colsep, &columns);
 	string_virtual *cols = (string_virtual *)columns.data;
@@ -63,8 +64,7 @@ void _dictionaries_print_note(const string *note) {
 
 void dictionaries_print(
 	const string *line, size_t current, size_t total, 
-	const string *note, dictionaries_status dict_stat, 
-	dictionaries_sorting dict_sort
+	dictionaries_status dict_stat, dictionaries_sorting dict_sort
 ) {
 	errors_panic("dictionaries_print (line)", strings_check_extra(line));
 	errors_panic("dictionaries_print (dict_stat)", dict_stat < 0);
@@ -116,6 +116,15 @@ void dictionaries_print(
 	case dictionaries_note_defined_status:
 		printf("| \033[32mDefinição adicionada\033[0m");
 	break;
+	case dictionaries_filter_enabled_status:
+		printf("| \033[32mFiltro ativado\033[0m");
+	break;
+	case dictionaries_filter_disabled_status:
+		printf("| \033[32mFiltro desativado\033[0m");
+	break;
+	case dictionaries_filter_not_matched_status:
+		printf("| \033[31mNenhuma correspondência\033[0m");
+	break;
 	}
 
 	printf("\n\n\n");
@@ -146,14 +155,13 @@ void dictionaries_print(
 	_dictionaries_print_frequency(cols+1);
 	printf("\n\n\n\n");
 
-	if (note != NULL) {
-		_dictionaries_print_note(note);
-	}
-
 	vectors_free(&columns);
 }
 
 bool dictionaries_compare_frequency(string *first, string *second) {
+	errors_panic("dictionaries_compare_frequency (first)", strings_check_extra(first));
+	errors_panic("dictionaries_compare_frequency (second)", strings_check_extra(second));
+
 	char *first_next_sep = strchr(first->text, '=');
 	ushort first_freq = 0;
 
@@ -174,5 +182,6 @@ bool dictionaries_compare_frequency(string *first, string *second) {
 
 	return true;
 }
+
 
 #endif

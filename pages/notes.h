@@ -16,6 +16,9 @@ typedef enum _notes_status {
 	notes_note_not_removed_status,
 	notes_note_defined_status,
 	notes_note_not_defined_status,
+	notes_filter_enabled_status,
+	notes_filter_disabled_status,
+    notes_filter_not_matched_status,
 } notes_status;
 
 #define notes_filename "./state/apprentice.csv"

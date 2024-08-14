@@ -33,6 +33,15 @@ void notes_print(const string *line, size_t current, size_t total, notes_status 
 	case notes_note_defined_status:
 		printf("| \033[32mDefinição adicionada\033[0m");
 	break;
+	case notes_filter_enabled_status:
+		printf("| \033[32mFiltro ativado\033[0m");
+	break;
+	case notes_filter_disabled_status:
+		printf("| \033[32mFiltro desativado\033[0m");
+	break;
+	case notes_filter_not_matched_status:
+		printf("| \033[31mNenhuma correspondência\033[0m");
+	break;
 	}
 
 	printf("\n\n\n");
@@ -76,9 +85,9 @@ void notes_print(const string *line, size_t current, size_t total, notes_status 
 }
 
 long notes_find(const vector *note_lines, const string *entry, string_virtual *note) {
-	errors_panic("notes_note (note_lines)", vectors_check(note_lines));
-	errors_panic("notes_note (entry)", strings_check_extra(entry));
-	errors_panic("notes_note (entry)", strings_check_extra(entry));
+	errors_panic("notes_find (note_lines)", vectors_check(note_lines));
+	errors_panic("notes_find (entry)", strings_check_extra(entry));
+	errors_panic("notes_find (entry)", strings_check_extra(entry));
 
 	string *notes = (string *)note_lines->data;
 

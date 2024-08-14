@@ -37,4 +37,8 @@ vector pages_make(const char *const filename, int mode);
 __attribute_warn_unused_result__
 string pages_make_line(const string *word);
 
+void pages_search(string *buffer);
+
+void pages_filter(const vector *page_lines, const string *word, vector *page_filtered);
+
 #endif
