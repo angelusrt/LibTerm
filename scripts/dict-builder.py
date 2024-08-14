@@ -7,9 +7,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 url = os.getenv("URL")
-wait = 10 
+wait = 15 
 ishtmlfile = False
 pad = "    "
+sep = "="
 
 files = os.listdir("../state/")
 files = [file for file in files if file.endswith(".html")]
@@ -122,8 +123,32 @@ for i in range(start, len(words)):
         continue
 
     gram = els["gram_type"].text
+
+    #normalizing type
+    if isinstance(gram, str):
+        gram_sep = gram.find(",")
+
+        if gram_sep > 0:
+            gram = gram[0:gram_sep]
+
     mean = els["meaning"].text.strip()
-    exam = els["example"].text.replace(";", ".")
+
+    #normalizing mean
+    if isinstance(mean, str):
+        mean_sep = mean.find("(")
+
+        if mean_sep > 0:
+            mean = mean[0:mean_sep]
+
+    exam = els["example"].text.replace("=", ",")
+
+    #normalizing exam
+    if isinstance(exam, str):
+        exam_sep = exam.find("(")
+
+        if exam_sep > 0:
+            exam = exam[0:exam_sep]
+
     freq = "0"
     gender = ""
 
@@ -139,9 +164,11 @@ for i in range(start, len(words)):
         freq = str(len(els["freq"].text))
 
     print(pad+"found - writing")
-    print(pad+word+";"+freq+";"+gender+";"+gram+";"+mean+";"+exam)
+    row = word+sep+freq+sep+gender+sep+gram+sep+mean+sep+exam
+
+    print(pad+row)
     print("")
 
     write_index(i)
-    dic.write(word+";"+freq+";"+gender+";"+gram+";"+mean+";"+exam+"\n")
+    dic.write(row+"\n")
 
