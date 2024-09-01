@@ -14,9 +14,12 @@
 __attribute_warn_unused_result__
 int files_make(const char *filename, int mode);
 
-//It returns 1 or 0; "1" meaning it ended or error'd; "0" meaning it is able to continue.
+//It returns -1 if error, 0 if it ended else 1 if it didn't ended.
 __attribute_warn_unused_result__
 int files_read(int f, string *buffer);
+
+__attribute_warn_unused_result__
+set files_make_trim_unique(const char *filename, int mode, const string *seps);
 
 //It returns 1 for error or 0 for success
 __attribute_warn_unused_result__

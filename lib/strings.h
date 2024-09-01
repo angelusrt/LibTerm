@@ -28,6 +28,7 @@ typedef struct _string_struct {
 
 typedef enum _strings_size {
 	strings_min = 16,
+	strings_petit = 128,
 	strings_small = 1024,
 	strings_big = 4096,
 	strings_large = 65536,
@@ -35,15 +36,18 @@ typedef enum _strings_size {
 	strings_max = SIZE_MAX,
 } strings_size;
 
-#define strings_init_buffer(buffer, length) \
+#define strings_preinit(buffer, length) \
 	char buf_##buffer[length] = ""; \
 	buffer = (string) {.text=buf_##buffer, .size=length, .capacity=length}
+
+#define strings_premake(lit) \
+	{.text=lit, .size=sizeof(lit), .capacity=sizeof(lit)}
 
 __attribute_warn_unused_result__
 string strings_init(strings_size size);
 
 __attribute_warn_unused_result__
-string strings_lit(char *const lit);
+string strings_make_copy(const string *s);
 
 __attribute_warn_unused_result__
 string strings_make(const char *lit);
@@ -71,24 +75,31 @@ bool string_virtuals_check(const string_virtual *s);
 
 //returns vector<size_t>
 __attribute_warn_unused_result__
-vector strings_find(const string *s, const string *sep);
+vector strings_make_find(const string *s, const string *sep);
 
-void strings_replace(string *s, const string *seps, const char rep[1]);
+void strings_replace(string *s, const string *seps, const char rep);
 
 __attribute_warn_unused_result__
 string strings_make_replace(const string *s, const string *sep, const string *rep);
 
+//returns true if error'ed or ended else false
 __attribute_warn_unused_result__
-vector strings_trim(const string *s, const string *sep);
+bool strings_next_token(const string *s, string_virtual *prev, char token);
 
 __attribute_warn_unused_result__
-set strings_trim_unique(const string *s);
+size_t strings_get_tokens(const string *line, string_virtual *tokens, size_t tokens_len, const string *separator);
+
+__attribute_warn_unused_result__
+vector strings_make_trim(const string *s, const string *sep);
+
+__attribute_warn_unused_result__
+set strings_make_trim_unique(const string *s);
 
 __attribute_warn_unused_result__
 __attribute__ ((__format__ (printf, 1, 2)))
 string strings_make_format(const char *const form, ...);
 
-void strings_trim_virtual(const string *s, const string *sep, vector *sentences);
+void strings_make_trim_virtual(const string *s, const string *sep, vector *sentences);
 
 __attribute_warn_unused_result__
 size_t strings_hasherize(const string *s);

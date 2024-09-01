@@ -12,11 +12,18 @@ string strings_init(const strings_size size) {
     return (string) {.size=1, .capacity=size, .text=text};
 }
 
-string strings_lit(char *const lit) {
-	errors_panic("strings_lit (lit)", lit == NULL);
-	errors_panic("strings_lit (lit[0] == '\\0')", lit[0] == '\0');
+string strings_make_copy(const string *s) {
+	errors_panic("strings_copy (s)", string_virtuals_check((string_virtual *)s));
+		
+	string dest = strings_init(s->size);
 
-	return (string){ .text=lit, .size=strlen(lit)+1 };
+	for (size_t j = 0; j < s->size; j++) {
+		dest.text[j] = s->text[j];
+	}
+
+	dest.size = s->size;
+
+	return dest;
 }
 
 string strings_make(const char *lit) {
@@ -147,9 +154,9 @@ bool string_virtuals_check(const string_virtual *s) {
 	return false;
 }
 
-vector strings_find(const string *s, const string *sep) {
-	errors_panic("strings_find (s)", strings_check_extra(s));
-	errors_panic("strings_find (sep)", strings_check_extra(sep));
+vector strings_make_find(const string *s, const string *sep) {
+	errors_panic("strings_make_find (s)", strings_check_extra(s));
+	errors_panic("strings_make_find (sep)", strings_check_extra(sep));
 
 	vector indexes = vectors_init(sizeof(size_t));
 
@@ -170,16 +177,14 @@ vector strings_find(const string *s, const string *sep) {
     return indexes;
 }
 
-void strings_replace(string *s, const string *seps, const char rep[1]) {
-    errors_panic("strings_replace (s)", s == NULL);
-    errors_panic("strings_replace (seps)", seps == NULL);
-    errors_panic("strings_replace (s <= 1)", s->size <= 1 );
-    errors_panic("strings_replace (sep <= 1)", seps->size <= 1);
+void strings_replace(string *s, const string *seps, const char rep) {
+    errors_panic("strings_replace (s)", strings_check_extra(s));
+    errors_panic("strings_replace (seps)", strings_check_extra(seps));
 
     for (size_t i = 0; i < s->size - 1; i++) {
 		for (size_t j = 0; j < seps->size - 1; j++) {
 			if (s->text[i] == seps->text[j]) {
-				s->text[i] = rep[0];
+				s->text[i] = rep;
 				break;
 			} 
 		}
@@ -197,7 +202,7 @@ string strings_make_replace(const string *s, const string *sep, const string *re
     long diff_size = (rep->size - sep->size);
     size_t size = s->size + (sep->size - 1) * diff_size;
 
-	vector indexes = strings_find(s, sep);
+	vector indexes = strings_make_find(s, sep);
 	if (indexes.size == 0) {
 		vectors_free(&indexes);
 		return strings_init(strings_min);
@@ -238,11 +243,71 @@ string strings_make_replace(const string *s, const string *sep, const string *re
     return new_string;
 }
 
+bool strings_next_token(const string *s, string_virtual *prev, char token) {
+	errors_panic("strings_next_token (s)", strings_check(s));
+
+	bool has_text_been_setted = false;
+	if (prev->text == NULL) {
+		prev->text = s->text;
+		prev->size = 2;
+		has_text_been_setted = true;
+	}
+	
+	//errors_panic("strings_next_token (prev)", string_virtuals_check(prev));
+	errors_panic("strings_next_token (prev < s)", prev->text < s->text);
+	errors_panic("strings_next_token (prev > s.size)", prev->text > s->text + s->size);
+
+	long new_size = 0;
+	do {
+		size_t token_pos = prev->text - s->text;
+		if (token_pos > s->size) return true;
+		//errors_panic("strings_next_token (token_pos > s.size)", token_pos > s->size);
+
+		size_t distance_from_end = s->size - token_pos;
+		if (distance_from_end == 0) return true;
+
+		if (has_text_been_setted) {
+			char *next_separator = strchr(prev->text, token);
+			if (next_separator == NULL) {
+				next_separator = s->text + s->size;
+			}
+
+			new_size = (next_separator + 1) - prev->text;
+			if (new_size <= 0) return true;
+
+			prev->size = new_size;
+
+			has_text_been_setted = next_separator == NULL ? true : false;
+			break;
+
+			//if (prev->text[0] != token) break;
+		} else {
+			prev->text += prev->size;
+			has_text_been_setted = true;
+		}
+	} while (true);
+
+	return false;
+}
+
+size_t strings_get_tokens(const string *line, string_virtual *tokens, size_t tokens_len, const string *separator) {
+	string_virtual token = {.text=NULL, .size=0};
+
+	size_t index = 0;
+	while (!strings_next_token(line, &token, separator->text[0])) {
+		tokens[index] = token;
+		index++;
+		if (index >= tokens_len) break;
+	}
+
+	return index;
+}
+
 vector strings_trim(const string *s, const string *sep) {
 	errors_panic("strings_trim (s)", strings_check_extra(s));
 	errors_panic("strings_trim (sep)", strings_check_extra(sep));
 
-	vector indexes = strings_find(s, sep);
+	vector indexes = strings_make_find(s, sep);
     vector sentences = vectors_init(vectors_string_type);
 
 	if (indexes.size == 0) {
@@ -302,15 +367,15 @@ vector strings_trim(const string *s, const string *sep) {
     return sentences;
 }
 
-void strings_trim_virtual(const string *s, const string *sep, vector *sentences) {
-    errors_panic("strings_trim_virtual (s)", s == NULL);
-    errors_panic("strings_trim_virtual (sep)", sep == NULL);
-    errors_panic("strings_trim_virtual (s.size <= 1)", s->size <= 1);
-    errors_panic("strings_trim_virtual (sep.size <= 1)", sep->size <= 1);
+void strings_make_trim_virtual(const string *s, const string *sep, vector *sentences) {
+    errors_panic("strings_make_trim_virtual (s)", s == NULL);
+    errors_panic("strings_make_trim_virtual (sep)", sep == NULL);
+    errors_panic("strings_make_trim_virtual (s.size <= 1)", s->size <= 1);
+    errors_panic("strings_make_trim_virtual (sep.size <= 1)", sep->size <= 1);
 
-	vector indexes = strings_find(s, sep);
+	vector indexes = strings_make_find(s, sep);
 	if (indexes.size == 0) {
-		printf(colors_warn("strings_trim_virtual (indexes.size == 0)"));
+		//printf(colors_warn("strings_trim_virtual (indexes.size == 0)"));
 		sentences->size = 0;
 		vectors_free(&indexes);
 		return;
@@ -354,43 +419,28 @@ void strings_trim_virtual(const string *s, const string *sep, vector *sentences)
 	vectors_free(&indexes);
 }
 
-set strings_trim_unique(const string *s) {
-	vector hashs = vectors_init(vectors_size_type);
-	vector freqs = vectors_init(vectors_size_type);
-	vector tokens = vectors_init(vectors_string_type);
+set strings_make_trim_unique(const string *s) {
+	errors_panic("strings_make_trim_unique (s)", strings_check(s));
+
+	set tokens_unique = sets_init(vectors_string_type);
 
 	string token = strings_make(s->text);
-	size_t hash = strings_hasherize(&token);
-
-	vectors_push(&hashs, (void *)hash);
-	vectors_push(&freqs, (void *)1);
-	vectors_push(&tokens, &token);
+	bool push_stat = sets_push(&tokens_unique, &token);
+	if (push_stat) {
+		strings_free(&token);
+	}
 
 	for (size_t i = 0; i < s->size - 1; i++) {
 		if (s->text[i] == '\0' && s->text[i + 1] != '\0') {
 			token = strings_make(s->text+i+1);
-			hash = strings_hasherize(&token);
-
-			bool found = false;
-			for (size_t j = 0; j < hashs.size - 1; j++) {
-				if (((size_t *)hashs.data)[j] == hash) {
-					((size_t *)freqs.data)[j] += 1;
-					found = true;
-					break;
-				}
-			}
-
-			if (found == false) {
-				vectors_push(&hashs, (void *)hash);
-				vectors_push(&freqs, (void *)1);
-				vectors_push(&tokens, &token);
-			} else {
+			push_stat = sets_push(&tokens_unique, &token);
+			if (push_stat) {
 				strings_free(&token);
 			}
 		} 
 	}
-
-	return (set){.hashs=hashs, .itens=tokens, .freqs=freqs};
+	
+	return tokens_unique;
 }
 
 string strings_make_format(const char *const form, ...) {

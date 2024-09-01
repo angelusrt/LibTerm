@@ -47,8 +47,23 @@ int files_read(int f, string *buffer) {
 	return 0;
 }
 
+set files_make_trim_unique(const char *filename, int mode, const string *seps) {
+	int file = files_make(filename, mode);
+
+	string buffer;
+	strings_preinit(buffer, strings_large);
+
+	int read_stat = files_read(file, &buffer);
+	errors_panic("files_make_trim_unique (read_stat == -1)", read_stat == -1);
+	close(file);
+
+	strings_replace(&buffer, seps, '\0');
+
+	return strings_make_trim_unique(&buffer);
+}
+
 bool files_sync(int f, string *buffer, const string *sep, size_t index) {
-	vector indexes = strings_find(buffer, sep);
+	vector indexes = strings_make_find(buffer, sep);
 
 	if (indexes.size >= index) {
 		int diff = buffer->size - ((size_t *)indexes.data)[index - 1];
