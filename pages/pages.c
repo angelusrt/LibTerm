@@ -2,6 +2,9 @@
 #define pages_c
 
 #include "pages.h"
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
 
 void menus_print() {
 	screens_clear();
@@ -18,8 +21,11 @@ void menus_print() {
 	printf("🮌 A  Adicionar Nota\n");
 	printf("🮌 R  Arquivar Nota\n");
 	printf("🮌 D  Adicionar Definição\n");
-	printf("🮌 H  Alternar entre Menu\n");
+	printf("🮌 C  Adicionar Categoria\n");
+	printf("🮌 T  Mostrar parametros\n");
+	printf("🮌 M  Alternar entre Menu\n");
 	printf("🮌 N  Alternar entre Notas\n");
+	printf("🮌 X  Alternar entre Categorias\n");
 	printf("🮌 F  filtrar páginas\n");
 	printf("🮌 S  Ordenar (alfabeticamente ou por frequência)\n");
 	printf("🮌 L  Ir para o final da lista\n");
@@ -92,6 +98,7 @@ string pages_make_line(const string *word) {
 	strncpy(temp.text + pages_date_offset(0) + 1, today, pages_date_len);
 	temp.text[pages_score_offset(0)] = colsep.text[0];
 	temp.text[pages_note_offset(0)] = colsep.text[0];
+	temp.text[pages_category_offset(0)] = colsep.text[0];
 	temp.text[pages_line_offset(0)] = linesep.text[0];
 
 	return temp;

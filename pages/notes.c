@@ -11,7 +11,7 @@ void notes_print(const string *line, size_t current, size_t total, notes_status 
 		return;
 	}
 
-	printf("\033[31mLinTerm | Notas \033[0m| Item: %ld/%ld", current + 1, total);
+	printf("\033[31mLinTerm | Notas \033[0m| Item: %ld/%ld ", current + 1, total);
 	errors_panic("notes_print (line)", strings_check_extra(line));
 
 	switch (notes_stat) {
@@ -33,6 +33,12 @@ void notes_print(const string *line, size_t current, size_t total, notes_status 
 	case notes_note_defined_status:
 		printf("| \033[32mDefinição adicionada\033[0m");
 	break;
+	case notes_note_categorized_status:
+		printf("| \033[32mCategoria adicionada\033[0m");
+	break;
+	case notes_note_not_categorized_status:
+		printf("| \033[32mCategoria não adicionada\033[0m");
+	break;
 	case notes_filter_enabled_status:
 		printf("| \033[32mFiltro ativado\033[0m");
 	break;
@@ -47,7 +53,7 @@ void notes_print(const string *line, size_t current, size_t total, notes_status 
 	printf("\n\n\n");
 
 	vector columns = vectors_init(vectors_string_virtual_type);
-	strings_trim_virtual(line, &colsep, &columns);
+	strings_make_trim_virtual(line, &colsep, &columns);
 	string_virtual *cols = (string_virtual *)columns.data;
 
 	printf("\033[1m");
@@ -55,30 +61,38 @@ void notes_print(const string *line, size_t current, size_t total, notes_status 
 		strings_print_no_panic((string *)(cols+0));
 	}
 
-	printf(" (definição: ");
-	if (columns.size > 1) {
-		strings_print_no_panic((string *)(cols+1));
-		printf(")");
-	}
-
-	if (columns.size > 2 && cols+2 != NULL && cols[2].size > 2 && strlen(cols[2].text) > 2) {
+	if (pages_columns_check(2)) {
 		printf(" [");
 		strings_print_no_panic((string *)(cols+2));
 		printf("] ");
 	} 
 
-	if (columns.size > 3 && cols+3 != NULL && cols[3].size > 2 && strlen(cols[3].text) > 2) {
+	if (pages_columns_check(3)) {
 		printf(" [");
 		strings_print_no_panic((string *)(cols+3));
 		printf("] ");
 	}
 
 	printf("\033[0m\n\n\n");
+
+	printf("Definição \n\n🮌 ");
+	if (columns.size > 1) {
+		strings_print_no_panic((string *)(cols+1));
+		printf("\n\n\n");
+	} 
+
+	printf("Categoria \n\n🮌 ");
+	if (columns.size > 5) {
+		strings_print_no_panic((string *)(cols+5));
+		printf("\n\n\n");
+	}
+
 	printf("Nota \n\n🮌 ");
 	if (columns.size > 4) {
 		strings_print_no_panic((string *)(cols+4));
 		printf("\n");
 	}
+
 	printf("\n\n");
 
 	vectors_free(&columns);
@@ -91,7 +105,7 @@ long notes_find(const vector *note_lines, const string *entry, string_virtual *n
 
 	string *notes = (string *)note_lines->data;
 
-	vector indexes = strings_find((string *)entry, &colsep);
+	vector indexes = strings_make_find((string *)entry, &colsep);
 	if (indexes.size < 1) goto not_found;
 
 	for (size_t i = 0; i < note_lines->size; i++) {
@@ -114,7 +128,7 @@ long notes_find(const vector *note_lines, const string *entry, string_virtual *n
 bool notes_add(int file, const string *entry) {
 	errors_panic("notes_add (entry)", strings_check_extra(entry));
 
-	vector indexes = strings_find(entry, &colsep);
+	vector indexes = strings_make_find(entry, &colsep);
 	if (indexes.size < 1) goto error_0;
 
 	string_virtual word = {.text=entry->text, .size=((size_t *)indexes.data)[0]+1};
@@ -145,7 +159,7 @@ int notes_insert(int file, size_t index) {
 	screens_canonical();
 
 	string buffer; 
-	strings_init_buffer(buffer, pages_note_len + 1);
+	strings_preinit(buffer, pages_note_len + 1);
 
 	long read_stat = read(STDIN_FILENO, buffer.text, buffer.capacity);
 	if (read_stat == -1) goto error_0;
@@ -173,7 +187,7 @@ int notes_define(int file, size_t index) {
 	screens_canonical();
 
 	string buffer; 
-	strings_init_buffer(buffer, pages_definition_len + 1);
+	strings_preinit(buffer, pages_definition_len + 1);
 
 	long read_stat = read(STDIN_FILENO, buffer.text, buffer.capacity);
 	if (read_stat == -1) goto error_0;
@@ -190,6 +204,34 @@ int notes_define(int file, size_t index) {
 	size_t buffer_size = strlen(buffer.text);
 	screens_raw();
 	return buffer_size <= pages_definition_len;
+
+	error_0:
+	screens_raw();
+	return -1;
+}
+
+int notes_categorize(int file, size_t index) {
+	printf("\033[33mInserir Categoria:\033[0m\n");
+	screens_canonical();
+
+	string buffer; 
+	strings_preinit(buffer, pages_category_len + 1);
+
+	long read_stat = read(STDIN_FILENO, buffer.text, buffer.capacity);
+	if (read_stat == -1) goto error_0;
+
+	char *new_line = strchr(buffer.text, '\n');
+	if (new_line) { *new_line = '\0'; }
+
+	long seek_stat = lseek(file, pages_category_offset(index) + 1, SEEK_SET);
+	if (seek_stat == -1) goto error_0;
+
+	long write_stat = write(file, buffer.text, pages_category_len);
+	if (write_stat == -1) goto error_0;
+
+	size_t buffer_size = strlen(buffer.text);
+	screens_raw();
+	return buffer_size <= pages_category_len;
 
 	error_0:
 	screens_raw();
@@ -215,7 +257,7 @@ bool notes_remove(int file, size_t index, size_t last, string_virtual *note) {
 	//--substitute it for last line
 	if (index < last) {
 		string last_buffer; 
-		strings_init_buffer(last_buffer, pages_line_len);
+		strings_preinit(last_buffer, pages_line_len);
 
 		long seek_stat = lseek(file, (pages_line_len * last), SEEK_SET);
 		if (seek_stat < 0) goto error_1;

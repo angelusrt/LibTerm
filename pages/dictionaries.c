@@ -24,40 +24,36 @@ void _dictionaries_print_frequency(string_virtual *frequency) {
 }
 
 void dictionaries_print_note(const string *note) {
+	//TODO: convert columns to tokens_next
 	vector columns = vectors_init(vectors_string_virtual_type);
-	strings_trim_virtual(note, &colsep, &columns);
+	strings_make_trim_virtual(note, &colsep, &columns);
 	string_virtual *cols = (string_virtual *)columns.data;
 
 	printf("\033[2mNotas \n\n");
-	printf("🮌 ");
-	if (columns.size > 0) {
-		strings_print_no_panic((string *)(cols+0));
-	}
 
-	printf(" (definição: ");
 	if (columns.size > 1) {
+		printf("🮌 ");
 		strings_print_no_panic((string *)(cols+1));
-		printf( ") ");
 	}
 
-	if (columns.size > 2 && cols+2 != NULL && cols[2].size > 2 && strlen(cols[2].text) > 2) {
-		printf(" [");
+	if (columns.size > 5) {
+		printf(" - ");
+		strings_print_no_panic((string *)(cols+5));
+	}
+
+	if (pages_columns_check(2)) {
+		printf(" - [");
 		strings_print_no_panic((string *)(cols+2));
-		printf("] ");
+		printf("] \n");
 	} 
 
-	if (columns.size > 3 && cols+3 != NULL && cols[3].size > 2 && strlen(cols[3].text) > 2) {
-		printf("[");
-		strings_print_no_panic((string *)(cols+3));
-		printf("] ");
-	}
-
-	printf("\n🮌 Nota: ");
+	printf("🮌 \n🮌 ");
 	if (columns.size > 4) {
 		strings_print_no_panic((string *)(cols+4));
-		printf("\n\n");
+		printf("\n");
 	}
-	printf("\n\033[0m");
+
+	printf("\n\n\033[0m");
 
 	vectors_free(&columns);
 }
@@ -69,10 +65,6 @@ void dictionaries_print(
 	errors_panic("dictionaries_print (line)", strings_check_extra(line));
 	errors_panic("dictionaries_print (dict_stat)", dict_stat < 0);
 
-	vector columns = vectors_init(vectors_string_virtual_type);
-	strings_trim_virtual(line, &colsep, &columns);
-
-	string_virtual *cols = (string_virtual *)columns.data;
 
 	screens_clear();
 	printf("\033[31mLinTerm | Dicionário \033[0m| Item: %ld/%ld ", current + 1, total);
@@ -116,6 +108,12 @@ void dictionaries_print(
 	case dictionaries_note_defined_status:
 		printf("| \033[32mDefinição adicionada\033[0m");
 	break;
+	case dictionaries_note_categorized_status: 
+		printf("| \033[32mNota adicionada\033[0m");
+	break;
+	case dictionaries_note_not_categorized_status: 
+		printf("| \033[32mNota adicionada\033[0m");
+	break;
 	case dictionaries_filter_enabled_status:
 		printf("| \033[32mFiltro ativado\033[0m");
 	break;
@@ -129,33 +127,43 @@ void dictionaries_print(
 
 	printf("\n\n\n");
 
+
+	string_virtual tokens[dictionaries_columns_size];
+	size_t tokens_size = strings_get_tokens(line, tokens, dictionaries_columns_size, &colsep);
+	#define column_check(index) tokens_size > index && tokens[index].size > 1
+
+
 	printf("\033[1m");
-	if (columns.size > 1) { 
-		strings_print_no_panic((string *)(cols+0));
+	if (column_check(2)) { 
+		strings_print((string *)&tokens[2]);
+		printf(" ");
 	}
 
-	if (columns.size > 3 && cols[2].size > 1) { 
-		printf(", ");
-		strings_print((string *)(cols+2));
+	if (column_check(0)) { 
+		strings_print((string *)&tokens[0]);
 	}
 
-	if (columns.size > 4) { 
-		printf(" (");
-		strings_print_no_panic((string *)(cols+3));
-		printf(") ");
-		printf("\033[0m\n");
+	if (column_check(3)) { 
+		printf(" [");
+		strings_print((string *)&tokens[3]);
+		printf("] ");
 	}  
+	printf("\033[0m\n");
 
-	if (columns.size > 5) { 
-		strings_print_no_panic((string *)(cols+4));
-		printf("\n\n");
+	if (column_check(4)) { 
+		strings_print((string *)&tokens[4]);
+		printf("\n");
 	}
 
-	printf("Frequência: \n");
-	_dictionaries_print_frequency(cols+1);
-	printf("\n\n\n\n");
+	if (column_check(5)) { 
+		printf("\nExemplo: \n");
+		strings_print((string *)&tokens[5]);
+		printf("\n");
+	}
 
-	vectors_free(&columns);
+	printf("\n\nFrequência: \n");
+	_dictionaries_print_frequency(&tokens[1]);
+	printf("\n\n\n\n");
 }
 
 bool dictionaries_compare_frequency(string *first, string *second) {

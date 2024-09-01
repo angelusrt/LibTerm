@@ -2,6 +2,7 @@
 #define notes_h
 
 #include "pages.h"
+#include <string.h>
 #include "../lib/strings.h"
 #include "../lib/strings.c"
 #include "../lib/errors.h"
@@ -16,12 +17,15 @@ typedef enum _notes_status {
 	notes_note_not_removed_status,
 	notes_note_defined_status,
 	notes_note_not_defined_status,
+	notes_note_categorized_status,
+	notes_note_not_categorized_status,
 	notes_filter_enabled_status,
 	notes_filter_disabled_status,
     notes_filter_not_matched_status,
 } notes_status;
 
 #define notes_filename "./state/apprentice.csv"
+#define notes_columns_max 6
 
 void notes_print(const string *line, size_t current, size_t total, notes_status notes_stat);
 
@@ -35,6 +39,10 @@ bool notes_add(int file, const string *entry);
 // It returns 0 for inserting conditionally, 1 for successfully inserting, or -1 for errors
 __attribute_warn_unused_result__
 int notes_insert(int file, size_t index);
+
+// It returns 0 for inserting conditionally, 1 for successfully inserting, or -1 for errors
+__attribute_warn_unused_result__
+int notes_categorize(int file, size_t index);
 
 // It returns 0 for inserting conditionally, 1 for successfully inserting, or -1 for errors
 __attribute_warn_unused_result__

@@ -21,6 +21,8 @@ typedef enum dictionaries_status {
 	dictionaries_note_not_removed_status,
     dictionaries_note_defined_status,
     dictionaries_note_not_defined_status,
+	dictionaries_note_not_categorized_status,
+	dictionaries_note_categorized_status,
     dictionaries_filter_enabled_status,
     dictionaries_filter_disabled_status,
     dictionaries_filter_not_matched_status,
@@ -34,6 +36,7 @@ typedef enum dictionaries_sorting {
 
 #define dictionaries_filename "./state/dictionary.csv"
 #define max_freq 5
+#define dictionaries_columns_size 6
 
 void dictionaries_print(
 	const string *line, size_t current, size_t total, 
