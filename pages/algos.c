@@ -279,6 +279,8 @@ algo algos_make(const vector *note_lines, const vector *parameters) {
 		vectors_push(&categories_value_and_weights, &value_and_weights);
 	}
 
+	vectors_free(&categories_indexes);
+
 	return (algo) {
 		.category=categories,
 		.category_hash=categories_hash,
