@@ -1,5 +1,6 @@
 #ifndef strings_c
 #define strings_c
+#include <ctype.h>
 #pragma once
 
 #include "strings.h"
@@ -123,7 +124,17 @@ bool strings_compare(const string *first, const string *second) {
         size = second->size;
     }
 
-    return strncmp(first->text, second->text, size) > 0;
+	for (size_t i = 0; i < size; i++) {
+		long diff = tolower(first->text[i]) - tolower(second->text[i]);
+		if (diff < 0) {
+			return false;
+		} else if (diff > 0) {
+			return true;
+		}
+
+	}
+
+	return false;
 }
 
 //checks if string was properly initialized
@@ -474,6 +485,8 @@ size_t strings_hasherize(const string *s) {
 
     for (size_t i = 0; i < s->size - 1; i++) {
         unsigned char character = s->text[i];
+		if (character >= 'A' && character <= 'z') character = tolower(character);
+
         size_t power = pow(hash_const, i + 1);
         hash += character * power;
     }

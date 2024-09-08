@@ -121,6 +121,10 @@ bool vectors_check(const vector *v) {
     return false;
 }
 
+void vectors_debug(vector *v, const char *const lit) {
+	printf("%s<vector>{type: %d, size: %zu, capacity: %zu, data: %p}\n", lit, v->type, v->size, v->capacity, v->data);
+}
+
 bool vectors_push(vector *v, void *item) {
     errors_panic("vectors_push (v)", v == NULL);
 
@@ -242,29 +246,27 @@ void vectors_normalize(vector *v) {
 	errors_panic("vectors_normalize (v.type != vector)", v->type != vectors_vector_type);
 
 	vector *lines = v->data;
-	vector maxs = vectors_init(vectors_double_type);
 
+	vector maxs = vectors_init(vectors_double_type);
+	for (size_t j = 0; j < lines[0].size; j++) {
+		double zero = 0;
+		vectors_push(&maxs, &zero);
+	}
+	double *maxs_data = maxs.data;
 
 	for (size_t i = 0; i < v->size; i++) {
 		double *line = lines[i].data;
+
 		errors_panic("vectors_normalize (lines[i])", vectors_check(&lines[i]));
 		errors_panic("vectors_normalize (lines[i].type != double)", lines[i].type != vectors_double_type);
 
-
 		for (size_t j = 1; j < lines[i].size; j++) {
-			if (maxs.size <= j) {
-				vectors_push(&maxs, &line[j]);
-				continue;
-			}
-
-			double *maxs_data = maxs.data;
-			if (line[j] > maxs_data[j]) {
+			if (line[j] != INFINITY && line[j] > maxs_data[j]) {
 				maxs_data[j] = line[j];
 			}
 		}
 	}
 
-	double *maxs_data = maxs.data;
 	for (size_t i = 0; i < v->size; i++) {
 		double *line = lines[i].data;
 

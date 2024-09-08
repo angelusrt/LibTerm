@@ -71,6 +71,7 @@ void vectors_free(vector *v);
 
 void vectors_normalize(vector *v);
 
+void vectors_debug(vector *v, const char *const lit);
 
 __attribute_warn_unused_result__
 set sets_init(vectors_type type);
