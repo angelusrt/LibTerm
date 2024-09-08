@@ -132,18 +132,20 @@ void pages_filter(const vector *page_lines, const string *word, vector *page_fil
 
 	for (size_t i = 0; i < page_lines->size; i++) {
 		string page = pages[i];
-		size_t size = word->size;
+		size_t size = word->size - 1;
 
-		if (page.size < size) {
-			size = page.size;
+		if (page.size == 0 || page.size < size) continue;
+
+		short diff = 0;
+		for (size_t i = 0; i < size; i++) {
+			long diff_temp = (tolower((u_char)page.text[i]) - tolower((u_char)word->text[i]));
+			if (diff_temp != 0) {
+				diff = 1;
+				break;
+			}
 		}
 
-		if (page.size == 0) {
-			size = 1;
-		}
-
-		int comp = strncmp(page.text, word->text, size - 1);
-		if (comp == 0) {
+		if (diff == 0) {
 			string new_page = strings_init(page.capacity);
 			for (size_t i = 0; i < page.capacity; i++) {
 				new_page.text[i] = page.text[i];

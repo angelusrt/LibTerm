@@ -23,20 +23,22 @@
 
 #define utils_print_float(description, value) \
 	printf(description); \
-	printf("%.4f ", value)
+	printf("%.2f ", value)
 
 
-const string substantive = strings_premake("Substantiv");
-#define substantive_hash 38342192371
+const string substantive = strings_premake("substantiv");
+#define substantive_hash 38342192595
 
 const string special_characters = strings_premake(";,.()[]= \n0123456789 ");
 
-#define algos_parameters_size 15
+#define algos_parameters_size 17
 
 typedef struct algo {
 	vector category;
 	vector category_hash;
-	vector value_and_weights;
+	vector values;
+	vector weights;
+	vector errors;
 } algo;
 
 __attribute_warn_unused_result__
@@ -50,7 +52,7 @@ __attribute_warn_unused_result__
 bool algos_check(const algo *a);
 
 __attribute_warn_unused_result__
-vector algos_reduce(const vector *indexes, const vector *parameters);
+vector *algos_reduce(const vector *indexes, const vector *parameters);
 
 __attribute_warn_unused_result__
 algo algos_make(const vector *note_lines, const vector *parameters);
