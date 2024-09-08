@@ -26,6 +26,8 @@ int main () {
 
 	printf("size, ");
 	printf("letters, ");
+	printf("prefix, ");
+	printf("postfix, ");
 	printf("freq, ");
 	printf("freqs, ");
 	printf("gen, ");
