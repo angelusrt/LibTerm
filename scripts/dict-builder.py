@@ -1,8 +1,11 @@
+#!/usr/bin/python3
+
 import csv
 import os
 import time
+from typing import Dict, Tuple
 import requests
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -12,6 +15,7 @@ ishtmlfile = False
 pad = "    "
 sep = "="
 
+
 files = os.listdir("../state/")
 files = [file for file in files if file.endswith(".html")]
 
@@ -19,12 +23,13 @@ if len(files) > 0:
     print("cleaning files")
     print("--")
 
-    for file in files:
-        os.remove("../state/"+file)
+    for file in files: os.remove("../state/"+file)
+
 
 try:
     dic = open("../state/dictionary.csv", mode="a+")
     err = open("../state/not-found.txt", mode="a+")
+    err2 = open("../state/not-found-example.txt", mode="a+")
     index = open("../state/index.txt", mode="r+")
 
     file = open("../state/german-words-normalized.txt", mode="r")
@@ -35,28 +40,35 @@ except:
     print("--")
     exit(1)
 
+
 start = index.read().split("\n")[0]
 if start != None and start != "" and start.isnumeric():
     start = int(start)
 else:
     start = 0
 
+
 def write_index(i: int):
     index.seek(0)
     index.write(str(i)+"\n")
     index.truncate()
 
-def print_error(word, i):
-    assert isinstance(word, str)
-    assert isinstance(i, int)
 
-    err.write(word+"\n")
-    write_index(i)
-    print(pad+"not found - skipping")
-    print("")
+def print_error(word, index: int, error_code: int):
+    assert isinstance(word, str)
+    assert isinstance(index, int)
+
+    if error_code == 4:
+        err2.write(word+"\n")
+    else:
+        err.write(word+"\n")
+
+    write_index(index)
+    print(pad+"not found - skipping ({0:b})\n".format(error_code))
     time.sleep(wait)
 
-def supplement(word):  
+
+def supplement(word) -> Tuple[Dict, int]:  
     response = requests.get(url=url+word)
 
     if ishtmlfile:
@@ -66,6 +78,7 @@ def supplement(word):
 
     soup = BeautifulSoup(markup=response.text, features="html.parser")
 
+
     els = {}
     els["gender"] = soup.find("span", attrs={"class":"lemma__determiner"})
     els["freq"] = soup.find("span", attrs={"class":"shaft__full"})
@@ -73,6 +86,7 @@ def supplement(word):
     els["meaning_parent"] = soup.find("div", attrs={"id":"bedeutung"})
     els["meaning"] = None
     els["example"] = None
+
 
     if els["meaning_parent"] != None: 
         els["meaning"] = els["meaning_parent"].find("p")
@@ -85,41 +99,61 @@ def supplement(word):
             els["meaning"] = els["meaning_parent"].find("div")
             els["example"] = els["meaning_parent"].find("li")
 
-    is_mean_par_valid = els["meaning_parent"] != None 
-    is_gram_valid = els["gram_type"] != None
-    is_mean_valid = els["meaning"] != None and not isinstance(els["meaning"], int)
-    is_exam_valid = els["example"] != None
-    is_valid = is_gram_valid and is_mean_par_valid and is_mean_valid and is_exam_valid
+    if els["meaning_parent"] == None: 
+        els["meaning_parent"] = soup.find("div", attrs={"id":"bedeutungen"})
 
-    return (els, is_valid)
+        if els["meaning_parent"] != None: 
+            lis = els["meaning_parent"].find("li")
+
+            if isinstance(lis, Tag): 
+                els["meaning"] = lis.find("div")
+                dd_table = lis.find("dd")
+
+                if isinstance(dd_table, Tag):
+                    els["example"] = dd_table.find("li")
+
+
+    is_gram_valid = 1 if els["gram_type"] == None else 0
+    is_mean_valid = 2 if els["meaning"] == None and not isinstance(els["meaning"], int) else 0
+    is_exam_valid = 4 if els["example"] == None else 0
+    is_valid = is_gram_valid + is_mean_valid + is_exam_valid
+
+
+    return els, is_valid
 
 
 for i in range(start, len(words)):
     if i % 7 == 0:
+        dic.flush()
+        err.flush()
+        err2.flush()
         os.system("clear")
 
     word = words[i][0]
-    print(str(i)+": evaluating "+word)
+    print(str(i)+": evaluating "+word.lower())
 
-    els, valid = supplement(word)
+    wordf = word
+    wordf = wordf.replace("ä", "ae").replace("ü", "ue").replace("ö", "oe").replace("ß", "sz")
+
+    els, error_code = supplement(wordf)
     time.sleep(wait)
 
-    if not valid and word[0].isupper():
-        word = word.lower()
-        print(pad+"not found - trying ", word)
+    #if not valid and word[0].isupper():
+    #    word = word
+    #    print(pad+"not found - trying ", word)
 
-        els, valid = supplement(word)
-        time.sleep(wait)
+    #    els, valid = supplement(word)
+    #    time.sleep(wait)
 
-    if not valid and word.endswith("e"):
-        word = word[:-1]
-        print(pad+"not found - trying ", word)
+    #if not valid and word.endswith("e"):
+    #    word = word[:-1]
+    #    print(pad+"not found - trying ", word)
 
-        els, valid = supplement(word)
-        time.sleep(wait)
+    #    els, valid = supplement(word)
+    #    time.sleep(wait)
 
-    if not valid:
-        print_error(word, i)
+    if error_code != 0:
+        print_error(word, i, error_code)
         continue
 
     gram = els["gram_type"].text
@@ -131,7 +165,7 @@ for i in range(start, len(words)):
         if gram_sep > 0:
             gram = gram[0:gram_sep]
 
-    mean = els["meaning"].text.strip()
+    mean = els["meaning"].text.strip().replace("\n", " ")
 
     #normalizing mean
     if isinstance(mean, str):
@@ -140,7 +174,7 @@ for i in range(start, len(words)):
         if mean_sep > 0:
             mean = mean[0:mean_sep]
 
-    exam = els["example"].text.replace("=", ",")
+    exam = els["example"].text.replace("=", ",").replace("\n", " ")
 
     #normalizing exam
     if isinstance(exam, str):
